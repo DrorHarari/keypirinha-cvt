@@ -41,6 +41,7 @@ All icons from Windows 8 Metro Icons by [dAKirby309](http://dakirby309.deviantar
 **V 0.1**
 - Initial release, rough around the edges.
 - Known issues: temperatue and fuel consumption conversions are broken, some aliases are not enter-able.
+
 **V 0.1.1**
 - Fixed aliases to make them enter-able.
 - Aliases selection is case sensitive - it should not be.
