@@ -14,8 +14,8 @@ class Cvt(kp.Plugin):
     CVTDEF_FILE = "cvtdefs.json"
     # Input parser definition
     RE_NUMBER = r'(?P<number>[-+]?[0-9]+(?:\.?[0-9]+)?(?:[eE][-+]?[0-9]+)?)'
-    RE_FROM = r'(?P<from>[a-zA-Z]+[a-zA-Z0-9/]*)'
-    RE_TO = r'(?P<to>[a-zA-Z]+[a-zA-Z0-9/]*)'
+    RE_FROM = r'(?P<from>[a-zA-Z]+[a-zA-Z0-9-/]*)'
+    RE_TO = r'(?P<to>[a-zA-Z]+[a-zA-Z0-9-/]*)'
     INPUT_PARSER = f'^{RE_NUMBER}\s{RE_FROM}?(?P<done>\s)?{RE_TO}?'
     
     def __init__(self):
