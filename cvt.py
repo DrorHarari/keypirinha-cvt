@@ -39,7 +39,6 @@ class Cvt(kp.Plugin):
             
     
     def on_start(self):
-        self.warn("Loading Cvt")
         self.load_conversions(self.CVTDEF_FILE)
         self.set_actions(self.ITEMCAT_RESULT, [
             self.create_action(

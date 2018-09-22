@@ -18,7 +18,7 @@ This plugin for Keypirinha provides unit conversions for the following measures:
 * Temperature
 * Data Size
 
-Usage:
+## Usage ##
 
 "Cvt" <measure> <tab> <number> <space> <from-unit-optional> <to-unit-optional>
 
@@ -28,7 +28,7 @@ Cvt <space> d <tab> 12 in mt <enter>
 
 New conversions (including new measures) can be added in the cvtdefs.json file.
 
-Installation:
+## Installation ##
 
 Download the cvt.keypirinha-package pacakge file to the Keypirinha\portable\Profile\InstalledPackages folder
 
