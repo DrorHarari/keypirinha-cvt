@@ -4,7 +4,7 @@
 			"name": "Distance",
 			"desc": "Convert units of distance",
 			"units": [
-				{"name": "Microns", "factor": "1.0e-6", "aliases": ["µm","um"]},
+				{"name": "Microns", "factor": "1.0e-6", "aliases": ["um"]},
 				{"name": "Millimetres", "factor": "0.001", "aliases": ["mm"]},
 				{"name": "Centimetres", "factor": "0.01", "aliases": ["cm"]},
 				{"name": "Metres", "factor": "1.0", "aliases": ["m","mt"]},
@@ -25,16 +25,16 @@
 			"name": "Area",
 			"desc": "Convert units of area",
 			"units": [
-				{"name": "Sq. Millimetres", "factor": "1.0e-6", "aliases": ["mm^2^"]},
-				{"name": "Sq. Centimetres", "factor": "1.0e-4", "aliases": ["cm^2^"]},
-				{"name": "Sq. Metres", "factor": "1.0", "aliases": ["m^2^"]},
+				{"name": "Sq. Millimetres", "factor": "1.0e-6", "aliases": ["mm2"]},
+				{"name": "Sq. Centimetres", "factor": "1.0e-4", "aliases": ["cm2"]},
+				{"name": "Sq. Metres", "factor": "1.0", "aliases": ["m2"]},
 				{"name": "Hectares", "factor": "10,000.0", "aliases": ["ha"]},
-				{"name": "Sq. Kilometres", "factor": "1,000,000.0", "aliases": ["km^2^"]},
-				{"name": "Sq. Inches", "factor": "0.0254 * 0.0254", "aliases": ["sq in"]},
-				{"name": "Sq. Feet", "factor": "0.3048 * 0.3048", "aliases": ["sq ft"]},
-				{"name": "Sq. Yards", "factor": "0.9144 * 0.9144", "aliases": ["sq yd"]},
+				{"name": "Sq. Kilometres", "factor": "1,000,000.0", "aliases": ["km2"]},
+				{"name": "Sq. Inches", "factor": "0.0254 * 0.0254", "aliases": ["sq-in"]},
+				{"name": "Sq. Feet", "factor": "0.3048 * 0.3048", "aliases": ["sq-ft"]},
+				{"name": "Sq. Yards", "factor": "0.9144 * 0.9144", "aliases": ["sq-yd"]},
 				{"name": "Acres", "factor": "0.9144 * 0.9144 * 4840", "aliases": ["ac"]},
-				{"name": "Sq. Miles", "factor": "1609.344 * 1609.344", "aliases": ["sq mi"]}
+				{"name": "Sq. Miles", "factor": "1609.344 * 1609.344", "aliases": ["sq-mi"]}
 			]
 		},
 		{
@@ -43,23 +43,23 @@
 			"units": [
 				{"name": "Millilitres (cc)", "factor": "1.0e-6", "aliases": ["ml"]},
 				{"name": "Litres", "factor": "0.001", "aliases": ["l"]},
-				{"name": "Cu. Metres", "factor": "1.0", "aliases": ["m^3^"]},
-				{"name": "Cu. Inches", "factor": "0.0254 * 0.0254 * 0.0254", "aliases": ["cu in"]},
-				{"name": "Cu. Feet", "factor": "0.3048 * 0.3048 * 0.3048", "aliases": ["cu ft"]},
-				{"name": "Cu. Yards", "factor": "0.9144 * 0.9144 * 0.9144", "aliases": ["cu yd"]},
-				{"name": "Fluid Ounce (Imp)", "factor": "2.84130625e-5", "aliases": ["fl oz (Imp)"]},
-				{"name": "Pint (Imp)", "factor": "5.6826125e-4", "aliases": ["pt (Imp)"]},
-				{"name": "Gallon (Imp)", "factor": "0.00454609", "aliases": ["gal (Imp)"]},
-				{"name": "Fluid Ounce (US)", "factor": "2.95735295625e-5", "aliases": ["fl oz (US)"]},
-				{"name": "Pint (US)", "factor": "4.73176473e-4", "aliases": ["pt (US)"]},
-				{"name": "Gallon (US)", "factor": "0.003785411784", "aliases": ["gal (US)"]}
+				{"name": "Cu. Metres", "factor": "1.0", "aliases": ["m3"]},
+				{"name": "Cu. Inches", "factor": "0.0254 * 0.0254 * 0.0254", "aliases": ["cu-in"]},
+				{"name": "Cu. Feet", "factor": "0.3048 * 0.3048 * 0.3048", "aliases": ["cu-ft"]},
+				{"name": "Cu. Yards", "factor": "0.9144 * 0.9144 * 0.9144", "aliases": ["cu-yd"]},
+				{"name": "Fluid Ounce (Imp)", "factor": "2.84130625e-5", "aliases": ["fl-oz-Imp"]},
+				{"name": "Pint (Imp)", "factor": "5.6826125e-4", "aliases": ["pt-Imp"]},
+				{"name": "Gallon (Imp)", "factor": "0.00454609", "aliases": ["gal-Imp"]},
+				{"name": "Fluid Ounce (US)", "factor": "2.95735295625e-5", "aliases": ["fl-oz-US"]},
+				{"name": "Pint (US)", "factor": "4.73176473e-4", "aliases": ["pt-US"]},
+				{"name": "Gallon (US)", "factor": "0.003785411784", "aliases": ["gal-US"]}
 			]
 		},
 		{
 			"name": "Mass",
 			"desc": "Convert units of mass",
 			"units": [
-				{"name": "Micrograms", "factor": "1.0e-9", "aliases": ["µg","ug"]},
+				{"name": "Micrograms", "factor": "1.0e-9", "aliases": ["ug"]},
 				{"name": "Milligrams", "factor": "1.0e-6", "aliases": ["mg"]},
 				{"name": "Grams", "factor": "0.001", "aliases": ["g"]},
 				{"name": "Kilograms", "factor": "1.0", "aliases": ["kg"]},
@@ -67,10 +67,10 @@
 				{"name": "Ounces", "factor": "0.028349523125", "aliases": ["oz"]},
 				{"name": "Pounds", "factor": "0.45359237", "aliases": ["lb"]},
 				{"name": "Stone", "factor": "14 * 0.45359237", "aliases": ["st"]},
-				{"name": "Hundredweight (US)", "factor": "100 * 0.45359237", "aliases": ["cwt (US)"]},
-				{"name": "Hundredweight (UK)", "factor": "112 * 0.45359237", "aliases": ["cwt (UK)"]},
-				{"name": "Short Tons (US)", "factor": "2000 * 0.45359237", "aliases": ["ton (US)"]},
-				{"name": "Long Tons (UK)", "factor": "2240 * 0.45359237", "aliases": ["ton (UK)"]}
+				{"name": "Hundredweight (US)", "factor": "100 * 0.45359237", "aliases": ["cwt-US"]},
+				{"name": "Hundredweight (UK)", "factor": "112 * 0.45359237", "aliases": ["cwt-UK"]},
+				{"name": "Short Tons (US)", "factor": "2000 * 0.45359237", "aliases": ["ton-US"]},
+				{"name": "Long Tons (UK)", "factor": "2240 * 0.45359237", "aliases": ["ton-UK"]}
 			]
 		},
 		{
@@ -90,15 +90,15 @@
 			"desc": "Convert units of time",
 			"units": [
 				{"name": "Nanoseconds", "factor": "1.0e-9", "aliases": ["ns"]},
-				{"name": "Microseconds", "factor": "1.0e-6", "aliases": ["µs","us"]},
+				{"name": "Microseconds", "factor": "1.0e-6", "aliases": ["us"]},
 				{"name": "Milliseconds", "factor": "0.001", "aliases": ["ms"]},
 				{"name": "Seconds", "factor": "1.0", "aliases": ["s","sec"]},
 				{"name": "Minutes", "factor": "60", "aliases": ["min"]},
 				{"name": "Hours", "factor": "60*60", "aliases": ["h"]},
 				{"name": "Days", "factor": "60*60*24", "aliases": ["d"]},
 				{"name": "Weeks", "factor": "60*60*24*7", "aliases": ["wk"]},
-				{"name": "Years (Julian)", "factor": "60*60*24*365.25", "aliases": ["a~j~"]},
-				{"name": "Years (Gregorian)", "factor": "60*60*24*365.2425", "aliases": ["a~g~"]}
+				{"name": "Years (Julian)", "factor": "60*60*24*365.25", "aliases": ["yj"]},
+				{"name": "Years (Gregorian)", "factor": "60*60*24*365.2425", "aliases": ["yg"]}
 			]
 
 		},
@@ -106,7 +106,7 @@
 			"name": "Force",
 			"desc": "Convert units of force",
 			"units": [
-				{"name": "Micronewtons", "factor": "1.0e-6", "aliases": ["µN","uN"]},
+				{"name": "Micronewtons", "factor": "1.0e-6", "aliases": ["uN"]},
 				{"name": "Millinewtons", "factor": "1.0e-3", "aliases": ["mN"]},
 				{"name": "Newtons", "factor": "1.0", "aliases": ["N"]},
 				{"name": "Kilonewtons", "factor": "1000.0", "aliases": ["kN"]},
@@ -126,7 +126,7 @@
 				{"name": "Millibar", "factor": "100.0", "aliases": ["mbar"]},
 				{"name": "Bar", "factor": "100,000.0", "aliases": ["bar"]},
 				{"name": "Atmosphere (std)", "factor": "101,325.0", "aliases": ["atm"]},
-				{"name": "Kilograms per sq. cm", "factor": "98066.5", "aliases": ["kg/cm^2^"]},
+				{"name": "Kilograms per sq. cm", "factor": "98066.5", "aliases": ["kg/cm2"]},
 				{"name": "Pounds per sq. inch", "factor": "6,894.75729", "aliases": ["psi"]},
 				{"name": "Inches of mercury", "factor": "3,386.389", "aliases": ["in Hg"]},
 				{"name": "Torr", "factor": "101,325/760", "aliases": ["Torr"]}
@@ -156,8 +156,8 @@
 				{"name": "Megawatts", "factor": "1,000,000.0", "aliases": ["MW"]},
 				{"name": "Calories per sec", "factor": "4.1868", "aliases": ["cal/s"]},
 				{"name": "BTUs per hour", "factor": "1055.05585262/3600", "aliases": ["BTU/h"]},
-				{"name": "Horsepower (mech)", "factor": "745.699872", "aliases": ["hp(I)"]},
-				{"name": "Horsepower (metric)", "factor": "735.49875", "aliases": ["hp(M)"]}
+				{"name": "Horsepower (mech)", "factor": "745.699872", "aliases": ["hp-I"]},
+				{"name": "Horsepower (metric)", "factor": "735.49875", "aliases": ["hp-M"]}
 			]
 
 		},
@@ -167,8 +167,8 @@
 			"units": [
 				{"name": "Kilometres per litre", "factor": "1.0", "aliases": ["km/l"]},
 				{"name": "Litres per 100km", "factor": "100.0", "aliases": ["l/100km"]},
-				{"name": "Miles per gallon (Imp)", "factor": "1.609344/4.54609", "aliases": ["mpg (Imp)"]},
-				{"name": "Miles per gallon (US)", "factor": "1.609344/3.785411784", "aliases": ["mpg (US)"]}
+				{"name": "Miles per gallon (Imp)", "factor": "1.609344/4.54609", "aliases": ["mpg-Imp"]},
+				{"name": "Miles per gallon (US)", "factor": "1.609344/3.785411784", "aliases": ["mpg-US"]}
 			]
 
 		},
@@ -176,9 +176,9 @@
 			"name": "Temperature",
 			"desc": "Convert units of temperature",
 			"units": [
-				{"name": "Celsius", "factor": "1.0", "aliases": ["°C"]},
-				{"name": "Fahrenheit", "factor": "5.0/9.0", "aliases": ["°F"]},
-				{"name": "Kelvin", "factor": "1.0", "aliases": ["K"]}
+				{"name": "Celsius", "factor": "1.0", "aliases": ["C"], "offset": "0.0"},
+				{"name": "Fahrenheit", "factor": "5.0/9.0", "aliases": ["F"], "offset": "32.0"},
+				{"name": "Kelvin", "factor": "1.0", "aliases": ["K"], "offset": "273.15"}
 			]
 
 		},
