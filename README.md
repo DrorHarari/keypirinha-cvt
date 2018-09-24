@@ -51,3 +51,9 @@ Download the cvt.keypirinha-package pacakge file to the Keypirinha\portable\Prof
 **V 0.1.1**
 - Fixed aliases to make them enter-able.
 - Aliases selection is case sensitive - it should not be.
+
+**V 0.2**
+- Fix temperatue and fuel consumption conversions
+- Aliases are no longer case sensitive
+- A copy of cvtdef.json can be placed in the User folder for experimentation
+- KNown issue: Keypirinha shows just 8 suggestions, when more than 8 units, some are not visible
