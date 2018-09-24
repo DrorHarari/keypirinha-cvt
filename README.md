@@ -36,7 +36,7 @@ New conversions (including new measures) can be added in the cvtdefs.json file.
 
 ## Installation ##
 
-Download the cvt.keypirinha-package pacakge file to the Keypirinha\portable\Profile\InstalledPackages folder
+The easiest way to install Cvt is to use the [PackageControl](https://github.com/ueffel/Keypirinha-PackageControl) plugin's InstallPackage command. For manual installation simply download the cvt.keypirinha-package file from the Releases page of this repository to the Keypirinha\portable\Profile\InstalledPackages folder.
 
 ## Credits ##
 
