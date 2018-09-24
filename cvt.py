@@ -110,7 +110,6 @@ class Cvt(kp.Plugin):
         to_offset = self.evaluate_expr(to_unit["offset"]) if "offset" in to_unit else 0
 
         if "inverse" in from_unit:
-            print(f"from inverse {from_unit['name']}")
             if in_number == 0:
                 in_number = 1e-30 # TBD better handle divide-by-zero 
             in_number = 1/in_number
@@ -118,7 +117,6 @@ class Cvt(kp.Plugin):
         converted = (in_number-from_offset) * from_factor / to_factor + to_offset
         
         if "inverse" in to_unit:
-            print(f"to inverse {to_unit['name']}")
             if converted == 0:
                 converted = 1e-30
             converted = 1/converted
@@ -129,7 +127,6 @@ class Cvt(kp.Plugin):
         parsed_input = self.input_parser.match(user_input) 
         if parsed_input is None:
             return
-        #print( kp.installed_package_dir("Cvt.Cvt"))
         
         in_number = float(parsed_input["number"])
         in_from = parsed_input["from"]
@@ -173,9 +170,7 @@ class Cvt(kp.Plugin):
             from_unit = units[0]
             
             for unit in measure["units"]:
-                print(f"Cvt measure {measure['name']} unit {unit['name']} ")
                 if not check_to_unit_match(unit):
-                    print(f"Cvt unit {unit['name']} didnt match")
                     continue
                     
                 converted = self.do_conversion(in_number, from_unit, unit)
@@ -187,7 +182,6 @@ class Cvt(kp.Plugin):
                     args_hint=kp.ItemArgsHint.REQUIRED,
                     hit_hint=kp.ItemHitHint.IGNORE,
                     data_bag=repr(converted)))
-                print(f"Cvt measure {measure['name']} unit {unit['name']} {converted}")
         else:
             # At this point we know the measure but not the from unit
             for unit in units:
