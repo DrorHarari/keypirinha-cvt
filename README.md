@@ -55,5 +55,6 @@ The easiest way to install Cvt is to use the [PackageControl](https://github.com
 **V 0.2**
 - Fix temperatue and fuel consumption conversions
 - Aliases are no longer case sensitive
-- A copy of cvtdef.json can be placed in the User folder for experimentation
-- KNown issue: Keypirinha shows just 8 suggestions, when more than 8 units, some are not visible
+- A copy of cvtdef.json can be placed in the User folder for customization
+- Known issue: Keypirinha shows just 8 suggestions, when more than 8 units, some are not visible but still available if you type the unit code
+
