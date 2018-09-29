@@ -52,22 +52,8 @@ class Cvt(kp.Plugin):
     def on_start(self):
         self.input_parser = re.compile(self.INPUT_PARSER)
         self.safeparser = Parser()
-        self.settings = self.load_settings()
-        
+        self.settings = self.load_settings()       
         self.load_conversions()
-
-        self.set_actions(self.ITEMCAT_RESULT, [
-            self.create_action(
-                name="copy",
-                label="Copy",
-                short_desc="Copy the converted units")])
-
-        self.set_actions(self.ITEMCAT_RELOAD_DEFS, [
-            self.create_action(
-                name="reload",
-                label="Reload",
-                short_desc="Reload the custom definiion file")])
-
 
     def on_activated(self):
         pass
@@ -188,7 +174,7 @@ class Cvt(kp.Plugin):
                 from_factor = self.evaluate_expr(unit["factor"])
                 converted = in_number / from_factor
                 suggestions.append(self.create_item(
-                    category=kp.ItemCategory.REFERENCE, #self.ITEMCAT_RESULT,
+                    category=kp.ItemCategory.REFERENCE,
                     label=",".join(unit["aliases"]),
                     short_desc=f'Convert from {unit["name"]}',
                     target=format(converted,".5f")+"DSSDSDSD",
