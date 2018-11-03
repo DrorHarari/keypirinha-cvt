@@ -19,42 +19,61 @@ This plugin for Keypirinha provides unit conversions for the following measures:
 * Data Size
 
 ## Usage ##
-Make sure to install Keypirinha from http://keypirinha.com/
 
-Open the LaunchBox and type:
+To convert a number of certain unit type:
 ```
-Cvt <measure> <tab> <number> <space> <from-unit-optional> <to-unit-optional>
-```
-
-It may look complex but it is actually very easy and Cvt prompts you all the way. For example, to convert 12 inches to meters you type in the lauchbox:
-
-```
-Cvt <space> d <tab> 12 in mt <enter>
+<number> <space> <from-unit-name>
 ```
 
-New conversions (including new measures) can be added in the cvtdefs.json file.
+Once the <from-unit-name> is typed, a list of unit to convert to is shown. At this point you can type a space and the target unit or select it from the list. Hit Enter to copy the converted value to the clipboard
+
+To see a list of valid unit names for a given measure, type:
+```
+Cvt: <measure-name>
+```
+You don't need to remember the measure names - a list of measure names will be offered to select from. The list of unit will include the full unit name as well as the conversion factor and offset (if applicable).
+
+## Customizing Conversions ##
+
+Cvt lets you customize the list of measures and units it supports. To customize the list, place a copy of the cvtdefs.json file in the user configuration directory (`Keypirinha\portable\Profile\User`) and add there your measures or units. 
+
+When a custom conversion file is used, the built-in conversion file is ignored so you won't see new measures and units that come with Cvt. When using a custom conversion file, typing Cvt: will show an option to reload the custom conversion file.
 
 ## Installation ##
 
-The easiest way to install Cvt is to use the [PackageControl](https://github.com/ueffel/Keypirinha-PackageControl) plugin's InstallPackage command. For manual installation simply download the cvt.keypirinha-package file from the Releases page of this repository to the Keypirinha\portable\Profile\InstalledPackages folder.
+The easiest way to install Cvt is to use the [PackageControl](https://github.com/ueffel/Keypirinha-PackageControl) plugin's InstallPackage command. 
+
+For manual installation simply download the cvt.keypirinha-package file from the Releases page of this repository to:
+
+* `Keypirinha\portable\Profile\InstalledPackages` in **Portable mode**
+
+**Or** 
+
+* `%APPDATA%\Keypirinha\InstalledPackages` in **Installed mode** 
 
 ## Credits ##
 
-* TBD
+* Thanks [ArmaniKorsich] (https://gitter.im/ArmaniKorsich) for the inspiration.
 
 ## Release Notes ##
 
-**V 0.1**
-- Initial release, rough around the edges.
-- Known issues: temperatue and fuel consumption conversions are broken, some aliases are not enter-able.
+** V1.0 **
+- First formal release
+- Made major change (simplification) to the usage 
+- Add way to see available units as well as conversion factors and offsets (when applicable)
+- Fixed errors in pressure and other conversions
 
-**V 0.1.1**
-- Fixed aliases to make them enter-able.
-- Aliases selection is case sensitive - it should not be.
-
-**V 0.2**
+** V0.2 **
 - Fix temperatue and fuel consumption conversions
 - Aliases are no longer case sensitive
 - A copy of cvtdef.json can be placed in the User folder for customization
 - Known issue: Keypirinha shows just 8 suggestions, when more than 8 units, some are not visible but still available if you type the unit code
+
+** V0.1.1 **
+- Fixed aliases to make them enter-able.
+- Aliases selection is case sensitive - it should not be.
+
+** V0.1 **
+- Initial release, rough around the edges.
+- Known issues: temperatue and fuel consumption conversions are broken, some aliases are not enter-able.
 

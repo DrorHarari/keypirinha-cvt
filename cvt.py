@@ -17,7 +17,7 @@ class Cvt(kp.Plugin):
     RE_NUMBER = r'(?P<number>[-+]?[0-9]+(?:\.?[0-9]+)?(?:[eE][-+]?[0-9]+)?)'
     RE_FROM = r'(?P<from>[a-zA-Z]+[a-zA-Z0-9-/]*)'
     RE_TO = r'(?P<to>[a-zA-Z]+[a-zA-Z0-9-/]*)'
-    INPUT_PARSER = f'^{RE_NUMBER}\s{RE_FROM}?(?P<done>\s)?{RE_TO}?'
+    INPUT_PARSER = f'^{RE_NUMBER}\s{RE_FROM}?(?P<done_from>\s)?{RE_TO}?(?P<done_to>\s)?'
 
     def __init__(self):
         super().__init__()
@@ -40,6 +40,13 @@ class Cvt(kp.Plugin):
             return
 
         self.measures = {measure["name"] : measure for measure in defs["measures"]}
+        self.all_units = {}
+        for measure in defs["measures"]:
+            for unit in measure["units"]:
+                for alias in unit["aliases"]:
+                    if alias in self.all_units:
+                        self.warn(f"Alias {alias} is defined multiple times")
+                    self.all_units[alias] = measure
 
     def evaluate_expr(self, expr):
         try:
@@ -52,8 +59,22 @@ class Cvt(kp.Plugin):
     def on_start(self):
         self.input_parser = re.compile(self.INPUT_PARSER)
         self.safeparser = Parser()
-        self.settings = self.load_settings()       
+        self.settings = self.load_settings()
+        
         self.load_conversions()
+
+        self.set_actions(self.ITEMCAT_RESULT, [
+            self.create_action(
+                name="copy",
+                label="Copy",
+                short_desc="Copy the converted units")])
+
+        self.set_actions(self.ITEMCAT_RELOAD_DEFS, [
+            self.create_action(
+                name="reload",
+                label="Reload",
+                short_desc="Reload the custom definiion file")])
+
 
     def on_activated(self):
         pass
@@ -69,6 +90,7 @@ class Cvt(kp.Plugin):
     def on_catalog(self):
         catalog = []
         
+        # To discover measures and units, type CVT then proposed supported measures
         for name,measure in self.measures.items():
             catalog.append(self.create_item(
                 category=kp.ItemCategory.REFERENCE,
@@ -78,6 +100,7 @@ class Cvt(kp.Plugin):
                 args_hint=kp.ItemArgsHint.REQUIRED,
                 hit_hint=kp.ItemHitHint.NOARGS))
 
+        # When custom conversion definition is used, propose Reload option
         if self.customized_config:
             catalog.append(self.create_item(
                 category=self.ITEMCAT_RELOAD_DEFS,
@@ -111,39 +134,58 @@ class Cvt(kp.Plugin):
         
     def on_suggest(self, user_input, items_chain):
         parsed_input = self.input_parser.match(user_input) 
-        if parsed_input is None:
+        if parsed_input is None and len(items_chain) < 1:
             return
+            
+        suggestions = []
         
+        # We just have the selected measure (no user input) - show units (dummy suggestion)
+        if parsed_input is None:
+            if not items_chain[-1].target() in self.measures:
+                return
+
+            measure = self.measures[items_chain[-1].target()]
+
+            for unit in measure["units"]:
+                conv_hint = f"factor {unit['factor']}"
+                if "offset" in unit:
+                    conv_hint = conv_hint + f", offset {unit['offset']}"
+                suggestions.append(self.create_item(
+                    category=kp.ItemCategory.REFERENCE,
+                    label=",".join(unit["aliases"]),
+                    short_desc=f'Conversion unit {unit["name"]}, {conv_hint}',
+                    target=unit["name"],
+                    args_hint=kp.ItemArgsHint.FORBIDDEN,
+                    hit_hint=kp.ItemHitHint.IGNORE))
+
+            self.set_suggestions(suggestions, kp.Match.ANY, kp.Sort.NONE)
+            return
+
+        # We have a number and (maybe) units
         in_number = float(parsed_input["number"])
         in_from = parsed_input["from"]
         if in_from:
             in_from = in_from.lower()
-        in_done = (parsed_input["done"] or False) and len(parsed_input["done"]) > 0
+        in_done_from = (parsed_input["done_from"] or False) and len(parsed_input["done_from"]) > 0
         in_to = parsed_input["to"]
+        in_done_to = (parsed_input["done_to"] or False) and len(parsed_input["done_to"]) > 0
         if in_to:
             in_to = in_to.lower()
 
-        # Valid user input may be:
-        # 1) number followed by whitespace
-        # 2) (optionally) followed by a from-unit name
-        # 3) (optionally) followed by a to-unit name
-
-        if not items_chain:
+        if  (in_from in self.all_units):
+            measure = self.all_units[in_from] 
+        else:
             return
 
-        current_item = items_chain[-1]
-        measure = self.measures[current_item.target()]
-        suggestions = []
-        
         if not "units" in measure:
             return
 
         cmp_exact = lambda candidate, alias: candidate == alias.lower()
         cmp_inexact = lambda candidate, alias: candidate in alias.lower()
-        comperator = cmp_inexact if not in_done else cmp_exact
+        comperator = cmp_inexact if not in_done_from else cmp_exact
 
         check_from_unit_match = lambda u: not in_from or any([comperator(in_from, alias) for alias in u["aliases"]])
-        check_to_unit_match = lambda u: not in_to or any([in_to in alias for alias in u["aliases"]])
+        check_to_unit_match = lambda u: not in_to or any([comperator(in_to, alias) for alias in u["aliases"]])
         units = list(filter(check_from_unit_match, measure["units"]))
         
         if len(units) == 0:
@@ -156,31 +198,19 @@ class Cvt(kp.Plugin):
             from_unit = units[0]
             
             for unit in measure["units"]:
+                comperator = cmp_exact if in_done_to else cmp_inexact
                 if not check_to_unit_match(unit):
                     continue
                     
                 converted = self.do_conversion(in_number, from_unit, unit)
                 suggestions.append(self.create_item(
                     category=self.ITEMCAT_RESULT,
-                    label=format(converted,".5f"),
+                    label=format(converted,".5g"),
                     short_desc=f'{unit["name"]} ({",".join(unit["aliases"])})',
-                    target=format(converted,".5f"),
-                    args_hint=kp.ItemArgsHint.REQUIRED,
+                    target=format(converted,".5g"),
+                    args_hint=kp.ItemArgsHint.FORBIDDEN,
                     hit_hint=kp.ItemHitHint.IGNORE,
                     data_bag=repr(converted)))
-        else:
-            # At this point we know the measure but not the from unit
-            for unit in units:
-                from_factor = self.evaluate_expr(unit["factor"])
-                converted = in_number / from_factor
-                suggestions.append(self.create_item(
-                    category=kp.ItemCategory.REFERENCE,
-                    label=",".join(unit["aliases"]),
-                    short_desc=f'Convert from {unit["name"]}',
-                    target=format(converted,".5f")+"DSSDSDSD",
-                    args_hint=kp.ItemArgsHint.REQUIRED,
-                    hit_hint=kp.ItemHitHint.IGNORE,
-                    data_bag=format(converted,".5f")))
 
         self.set_suggestions(suggestions, kp.Match.ANY, kp.Sort.NONE)
 
