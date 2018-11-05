@@ -53,6 +53,7 @@ For manual installation simply download the cvt.keypirinha-package file from the
 
 ## Credits ##
 
+* Thanks the folks at [Quartic Softwre](http://www.quartic-software.co.uk/) for their awesome Android calculator app [RealCalc Plus](https://play.google.com/store/apps/details?id=uk.co.nickfines.RealCalcPlus) from which I took the list of measures, units and their conversion rules. If you like an HP-style RPN calculator in your phone, that's the one to use!
 * Thanks [ArmaniKorsich](https://gitter.im/ArmaniKorsich) for the inspiration.
 
 ## Release Notes ##
