@@ -27,6 +27,9 @@ To convert a number of certain unit type:
 
 Once the `from-unit-name` is typed, a list of units to convert to along with converted values is shown. At this point you can type a space and the target unit or select it from the list. Hit Enter to copy the converted value to the clipboard
 
+![Example: convert 12 kg to other units](images/example-weight-conversion.png?raw=true)
+
+
 To see a list of valid unit names for a given measure, type:
 ```
 Cvt: <measure-name>
