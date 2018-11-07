@@ -62,7 +62,7 @@ For manual installation simply download the cvt.keypirinha-package file from the
 ## Release Notes ##
 
 **V1.0.1**
-- Support Keypirinha's space_as_tab space_as_tab setting. No need for space after number so now 12kg is fine. To enter the target unit any non-alphanumeric character (other than /) can be used as separator.  
+- Support Keypirinha's space_as_tab=yes setting. No need for space after number so now 12kg is fine. To enter the target unit any non-alphanumeric character (other than /) can be used as separator. 
 
 **V1.0**
 - First formal release
