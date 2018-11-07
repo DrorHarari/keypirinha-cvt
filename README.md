@@ -22,10 +22,10 @@ This plugin for Keypirinha provides unit conversions for the following measures:
 
 To convert a number of certain unit type:
 ```
-<number> <space> <from-unit-name>
+<number> <from-unit-name>
 ```
 
-Once the `from-unit-name` is typed, a list of units to convert to along with converted values is shown. At this point you can type a space and the target unit or select it from the list. Hit Enter to copy the converted value to the clipboard
+Once the `from-unit-name` is typed, a list of units to convert to along with converted values is shown. At this point you can type a space (or any other non-alphanumeric character except /) and the target unit or select it from the list. Hit Enter to copy the converted value to the clipboard
 
 ![Example: convert 12 kg to other units](images/example-weight-conversion.png?raw=true)
 
