@@ -15,9 +15,11 @@ class Cvt(kp.Plugin):
     CVTDEF_FILE = "cvtdefs.json"
     # Input parser definition
     RE_NUMBER = r'(?P<number>[-+]?[0-9]+(?:\.?[0-9]+)?(?:[eE][-+]?[0-9]+)?)'
-    RE_FROM = r'(?P<from>[a-zA-Z]+[a-zA-Z0-9-/]*)'
-    RE_TO = r'(?P<to>[a-zA-Z]+[a-zA-Z0-9-/]*)'
-    INPUT_PARSER = f'^{RE_NUMBER}\s{RE_FROM}?(?P<done_from>\s)?{RE_TO}?(?P<done_to>\s)?'
+    RE_FROM = r'(?P<from>[a-zA-Z]+[a-zA-Z0-9/]*)'
+    DONE_FROM = r'(?P<done_from>[^a-zA-Z0-9/]+)'
+    RE_TO = r'(?P<to>[a-zA-Z]+[a-zA-Z0-9/]*)'
+    DONE_TO = r'(?P<done_to>[^a-zA-Z0-9/]+)'
+    INPUT_PARSER = f'^{RE_NUMBER}(?=[^0-9])\s*{RE_FROM}?{DONE_FROM}?{RE_TO}?{DONE_TO}?'
 
     def __init__(self):
         super().__init__()
@@ -139,7 +141,7 @@ class Cvt(kp.Plugin):
             
         suggestions = []
         
-        # We just have the selected measure (no user input) - show units (dummy suggestion)
+        # User selected one of Cvt's Measures - show units (dummy suggestion)
         if parsed_input is None:
             if not items_chain[-1].target() in self.measures:
                 return
