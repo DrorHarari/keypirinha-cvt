@@ -36,6 +36,8 @@ Cvt: <measure-name>
 ```
 You don't need to remember the measure names - a list of measure names will be offered to select from. The list of units will include the full unit name as well as the conversion factor and offset (if applicable).
 
+![Example: see mass measure units and their conversion rules](images/example-measure.png?raw=true)
+
 ## Customizing Conversions ##
 
 Cvt lets you customize the list of measures and units it supports. To customize the list, place a copy of the cvtdefs.json file (from this repository or from the plugin file) in the user configuration directory (`Keypirinha\portable\Profile\User`) and add there your measures or units. 
