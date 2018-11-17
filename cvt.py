@@ -10,6 +10,8 @@ from .lib.safeeval import Parser
 class Cvt(kp.Plugin):
     ITEMCAT_RESULT = kp.ItemCategory.USER_BASE + 1
     ITEMCAT_RELOAD_DEFS = kp.ItemCategory.USER_BASE + 2
+    ITEMCAT_CREATE_CUSTOM_DEFS = kp.ItemCategory.USER_BASE + 3
+
     ITEM_LABEL_PREFIX = "Cvt: "
 
     CVTDEF_FILE = "cvtdefs.json"
@@ -28,7 +30,7 @@ class Cvt(kp.Plugin):
         try:
             cvtdefs = os.path.join(kp.user_config_dir(), self.CVTDEF_FILE)
             if os.path.exists(cvtdefs):
-                self.info(f"Loading custom config '{cvtdefs}'")
+                self.info(f"Loading custom conversion definition file '{cvtdefs}'")
                 self.customized_config = True
                 with open(cvtdefs, "r") as f:
                     defs = json.load(f)                 
@@ -38,7 +40,7 @@ class Cvt(kp.Plugin):
                 defs_text = self.load_text_resource(cvtdefs)
                 defs = json.loads(defs_text)
         except Exception as exc:
-            self.warn(f"Failed to load definitions file {cvtdefs}, {exc}")
+            self.warn(f"Failed to load definitions file '{cvtdefs}', {exc}")
             return
 
         self.measures = {measure["name"] : measure for measure in defs["measures"]}
@@ -75,8 +77,13 @@ class Cvt(kp.Plugin):
             self.create_action(
                 name="reload",
                 label="Reload",
-                short_desc="Reload the custom definiion file")])
+                short_desc="Reload the custom conversion definition file")])
 
+        self.set_actions(self.ITEMCAT_CREATE_CUSTOM_DEFS, [
+            self.create_action(
+                name="customize",
+                label="Customize coversions",
+                short_desc="Create a custom conversion definition file")])
 
     def on_activated(self):
         pass
@@ -106,11 +113,19 @@ class Cvt(kp.Plugin):
         if self.customized_config:
             catalog.append(self.create_item(
                 category=self.ITEMCAT_RELOAD_DEFS,
-                label=self.ITEM_LABEL_PREFIX + "Reload definitions",
-                short_desc="Reload the custom definition file",
-                target=measure["name"],
+                label=self.ITEM_LABEL_PREFIX + "Reload custom conversions",
+                short_desc="Reload the custom conversions file",
+                target="ITEMCAT_RELOAD_DEFS",
                 args_hint=kp.ItemArgsHint.FORBIDDEN,
-                hit_hint=kp.ItemHitHint.NOARGS))
+                hit_hint=kp.ItemHitHint.IGNORE))       
+        else: # Else offer an option to customize
+            catalog.append(self.create_item(
+                category=self.ITEMCAT_CREATE_CUSTOM_DEFS,
+                label=self.ITEM_LABEL_PREFIX + "Customize conversions",
+                short_desc="Create a custom conversion definition file",
+                target="ITEMCAT_CREATE_CUSTOM_DEFS",
+                args_hint=kp.ItemArgsHint.FORBIDDEN,
+                hit_hint=kp.ItemHitHint.IGNORE))    
 
         self.set_catalog(catalog)
 
@@ -184,12 +199,12 @@ class Cvt(kp.Plugin):
 
         cmp_exact = lambda candidate, alias: candidate == alias.lower()
         cmp_inexact = lambda candidate, alias: candidate in alias.lower()
-        comperator = cmp_inexact if not in_done_from else cmp_exact
+        comperator = cmp_exact
 
         check_from_unit_match = lambda u: not in_from or any([comperator(in_from, alias) for alias in u["aliases"]])
         check_to_unit_match = lambda u: not in_to or any([comperator(in_to, alias) for alias in u["aliases"]])
         units = list(filter(check_from_unit_match, measure["units"]))
-        
+
         if len(units) == 0:
             comperator = cmp_inexact
             units = list(filter(check_from_unit_match, measure["units"]))
@@ -221,3 +236,20 @@ class Cvt(kp.Plugin):
             kpu.set_clipboard(item.data_bag())
         elif item and item.category() == self.ITEMCAT_RELOAD_DEFS:
             self.load_conversions()
+            self.on_catalog()
+        elif item and item.category() == self.ITEMCAT_CREATE_CUSTOM_DEFS:
+            try:
+                builtin_cvtdefs = os.path.join("data/",self.CVTDEF_FILE)
+                builtin_cvtdefs_text = self.load_text_resource(builtin_cvtdefs).replace("\r\n","\n")
+                custom_cvtdefs = os.path.join(kp.user_config_dir(), self.CVTDEF_FILE)
+                if os.path.exists(custom_cvtdefs):
+                    self.warn(f"Customized conversion file '{custom_cvtdefs}' already exists. It hasn't been overwritten")
+                else:
+                    with open(custom_cvtdefs, "w") as f:
+                        f.write(builtin_cvtdefs_text)
+                        f.close()
+                    kpu.explore_file(custom_cvtdefs)
+                    self.load_conversions()
+                    self.on_catalog()
+            except Exception as exc:
+                self.warn(f"Failed to create custom conversion definition file '{custom_cvtdefs}', {exc}")

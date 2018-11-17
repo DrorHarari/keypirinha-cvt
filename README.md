@@ -38,11 +38,12 @@ You don't need to remember the measure names - a list of measure names will be o
 
 ![Example: see mass measure units and their conversion rules](images/example-measure.png?raw=true)
 
+
 ## Customizing Conversions ##
 
-Cvt lets you customize the list of measures and units it supports. To customize the list, place a copy of the cvtdefs.json file (from this repository or from the plugin file) in the user configuration directory (`Keypirinha\portable\Profile\User`) and add there your measures or units. 
+Cvt lets you customize the measures and units it supports. To customize the list, enter the "Cvt: Customize coversions" action in the box - this will place a copy of the conversion definition file cvtdefs.json in the user configuration directory (`Keypirinha\portable\Profile\User`). Make your changes to the measure or units definitions and then enter "Cvt: Reload custom coversions" action in the box. 
 
-When a custom conversion file is used, the built-in conversion file is ignored so you won't see new measures and units that come with Cvt. When using a custom conversion file, typing Cvt: will show an option to reload the custom conversion file.
+When a custom conversion file is used, the built-in conversion file is ignored so you won't see new measures and units that come with Cvt.
 
 ## Installation ##
 
@@ -62,6 +63,11 @@ For manual installation simply download the cvt.keypirinha-package file from the
 * Thanks [ArmaniKorsich](https://gitter.im/ArmaniKorsich) for the inspiration to write this plugin.
 
 ## Release Notes ##
+
+**V1.0.2**
+- All units with US vs. Imperial versions such as fluid ounces (e.g, flozu vs. flozi or galu vs. gali) can now be used in their US version without the 'u' suffix (e.g, floz or gal).
+- Previously, if a typed unit alias was also part of a longer unit alias, no conversion was shown. Now if there is an exact match with a unit alias, conversion is shown.
+- New action to create conversion customization file (no longer needede to download it from this repository)
 
 **V1.0.1**
 - Support Keypirinha's space_as_tab=yes setting. No need for space after number so now 12kg is fine. To enter the target unit any non-alphanumeric character (other than /) can be used as separator. 
@@ -85,4 +91,3 @@ For manual installation simply download the cvt.keypirinha-package file from the
 **V0.1**
 - Initial release, rough around the edges.
 - Known issues: temperatue and fuel consumption conversions are broken, some aliases are not enter-able.
-

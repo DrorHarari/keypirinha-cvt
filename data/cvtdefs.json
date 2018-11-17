@@ -50,9 +50,9 @@
 				{"name": "Fluid Ounce (Imp)", "factor": "2.84130625e-5", "aliases": ["flozi"]},
 				{"name": "Pint (Imp)", "factor": "5.6826125e-4", "aliases": ["pti"]},
 				{"name": "Gallon (Imp)", "factor": "0.00454609", "aliases": ["gali"]},
-				{"name": "Fluid Ounce (US)", "factor": "2.95735295625e-5", "aliases": ["flozu"]},
-				{"name": "Pint (US)", "factor": "4.73176473e-4", "aliases": ["ptu"]},
-				{"name": "Gallon (US)", "factor": "0.003785411784", "aliases": ["galu"]}
+				{"name": "Fluid Ounce (US)", "factor": "2.95735295625e-5", "aliases": ["floz","flozu"]},
+				{"name": "Pint (US)", "factor": "4.73176473e-4", "aliases": ["pt","ptu"]},
+				{"name": "Gallon (US)", "factor": "0.003785411784", "aliases": ["gal","galu"]}
 			]
 		},
 		{
@@ -67,9 +67,9 @@
 				{"name": "Ounces", "factor": "0.028349523125", "aliases": ["oz"]},
 				{"name": "Pounds", "factor": "0.45359237", "aliases": ["lb"]},
 				{"name": "Stone", "factor": "14*0.45359237", "aliases": ["st"]},
-				{"name": "Hundredweight (US)", "factor": "100*0.45359237", "aliases": ["cwtus"]},
+				{"name": "Hundredweight (US)", "factor": "100*0.45359237", "aliases": ["cwt","cwtus"]},
 				{"name": "Hundredweight (UK)", "factor": "112*0.45359237", "aliases": ["cwtuk"]},
-				{"name": "Short Tons (US)", "factor": "2000*0.45359237", "aliases": ["tonus"]},
+				{"name": "Short Tons (US)", "factor": "2000*0.45359237", "aliases": ["ton","tonus"]},
 				{"name": "Long Tons (UK)", "factor": "2240*0.45359237", "aliases": ["tonuk"]}
 			]
 		},
@@ -169,7 +169,7 @@
 				{"name": "Kilometres per litre", "factor": "1", "aliases": ["km/l"]},
 				{"name": "Litres per 100km", "factor": "100", "aliases": ["l/100km"], "inverse": true},
 				{"name": "Miles per gallon (Imp)", "factor": "1.609344/4.54609", "aliases": ["mpgi"]},
-				{"name": "Miles per gallon (US)", "factor": "1.609344/3.785411784", "aliases": ["mpgu"]}
+				{"name": "Miles per gallon (US)", "factor": "1.609344/3.785411784", "aliases": ["mpg","mpgu"]}
 			]
 
 		},
