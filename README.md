@@ -68,7 +68,8 @@ For manual installation simply download the cvt.keypirinha-package file from the
 
 **V1.0.3**
 - Units with uppercase name where not matched on input. Fixed.
-- Internal work, added debug message to ease troubelshooting. 
+- Internal work, added debug message to ease troubelshooting.
+- More aliases to temperatue units.
 
 **V1.0.2**
 - All units with US vs. Imperial versions such as fluid ounces (e.g, flozu vs. flozi or galu vs. gali) can now be used in their US version without the 'u' suffix (e.g, floz or gal).

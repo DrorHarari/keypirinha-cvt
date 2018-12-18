@@ -65,7 +65,7 @@ class Cvt(kp.Plugin):
         self.input_parser = re.compile(self.INPUT_PARSER)
         self.safeparser = Parser()
         self.settings = self.load_settings()
-        self._debug = True
+        self._debug = False
         
         self.load_conversions()
 
