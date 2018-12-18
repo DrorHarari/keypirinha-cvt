@@ -65,7 +65,7 @@ class Cvt(kp.Plugin):
         self.input_parser = re.compile(self.INPUT_PARSER)
         self.safeparser = Parser()
         self.settings = self.load_settings()
-        self._debug = False
+        #self._debug = True
         
         self.load_conversions()
 
@@ -173,7 +173,7 @@ class Cvt(kp.Plugin):
                 conv_hint = f"factor {unit['factor']}"
                 if "offset" in unit:
                     conv_hint = conv_hint + f", offset {unit['offset']}"
-                self.dbg(f"Added suggestion for unit '{unit['name']}' hint = {hint}")
+                self.dbg(f"Added suggestion for unit '{unit['name']}' conv_hint = {conv_hint}")
                 suggestions.append(self.create_item(
                     category=kp.ItemCategory.REFERENCE,
                     label=",".join(unit["aliases"]),
