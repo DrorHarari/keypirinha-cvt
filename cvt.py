@@ -48,6 +48,7 @@ class Cvt(kp.Plugin):
         for measure in defs["measures"]:
             for unit in measure["units"]:
                 for alias in unit["aliases"]:
+                    alias = alias.lower()
                     if alias in self.all_units:
                         self.warn(f"Alias {alias} is defined multiple times")
                     self.all_units[alias] = measure
@@ -64,6 +65,7 @@ class Cvt(kp.Plugin):
         self.input_parser = re.compile(self.INPUT_PARSER)
         self.safeparser = Parser()
         self.settings = self.load_settings()
+        self._debug = True
         
         self.load_conversions()
 
@@ -97,6 +99,7 @@ class Cvt(kp.Plugin):
             self.on_catalog()
         
     def on_catalog(self):
+        self.dbg(f"In on_catalog")
         catalog = []
         
         # To discover measures and units, type CVT then proposed supported measures
@@ -151,7 +154,9 @@ class Cvt(kp.Plugin):
         
     def on_suggest(self, user_input, items_chain):
         parsed_input = self.input_parser.match(user_input) 
+        self.dbg(f"In suggest, parsed input = '{parsed_input}'")
         if parsed_input is None and len(items_chain) < 1:
+            self.dbg(f"In suggest, not matched")
             return
             
         suggestions = []
@@ -162,11 +167,13 @@ class Cvt(kp.Plugin):
                 return
 
             measure = self.measures[items_chain[-1].target()]
+            self.dbg(f"No parsed input, measure = {measure}")
 
             for unit in measure["units"]:
                 conv_hint = f"factor {unit['factor']}"
                 if "offset" in unit:
                     conv_hint = conv_hint + f", offset {unit['offset']}"
+                self.dbg(f"Added suggestion for unit '{unit['name']}' hint = {hint}")
                 suggestions.append(self.create_item(
                     category=kp.ItemCategory.REFERENCE,
                     label=",".join(unit["aliases"]),
@@ -192,6 +199,7 @@ class Cvt(kp.Plugin):
         if  (in_from in self.all_units):
             measure = self.all_units[in_from] 
         else:
+            self.dbg(f"reject in_from = {in_from}, units = {self.all_units.keys()}")
             return
 
         if not "units" in measure:
@@ -209,16 +217,19 @@ class Cvt(kp.Plugin):
             comperator = cmp_inexact
             units = list(filter(check_from_unit_match, measure["units"]))
         
+        self.dbg(f"#units matched = {len(units)}")
         if len(units) == 1: 
             # At this point we know the measure and the from unit
             # We propose the target units (filtered down if given to_unit)
             from_unit = units[0]
             
             for unit in measure["units"]:
+                self.dbg(f"unit = {unit['name']}")
                 comperator = cmp_exact if in_done_to else cmp_inexact
                 if not check_to_unit_match(unit):
                     continue
                     
+                self.dbg(f"Added unit = {unit['name']}")
                 converted = self.do_conversion(in_number, from_unit, unit)
                 suggestions.append(self.create_item(
                     category=self.ITEMCAT_RESULT,

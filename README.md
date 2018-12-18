@@ -27,8 +27,11 @@ To convert a number of certain unit type:
 
 Once the `from-unit-name` is typed, a list of units to convert to along with converted values is shown. At this point you can type a space (or any other non-alphanumeric character except /) and the target unit or select it from the list. Hit Enter to copy the converted value to the clipboard
 
+**Mass Conversion Example**
 ![Example: convert 12 kg to other units](images/example-weight-conversion.png?raw=true)
 
+**Temperature Conversion Example**
+![Example: convert 103 degrees Fahrenheit to other units](images/example-temperature-conversion.png?raw=true)
 
 To see a list of valid unit names for a given measure, type:
 ```
@@ -37,7 +40,6 @@ Cvt: <measure-name>
 You don't need to remember the measure names - a list of measure names will be offered to select from. The list of units will include the full unit name as well as the conversion factor and offset (if applicable).
 
 ![Example: see mass measure units and their conversion rules](images/example-measure.png?raw=true)
-
 
 ## Customizing Conversions ##
 
@@ -63,6 +65,10 @@ For manual installation simply download the cvt.keypirinha-package file from the
 * Thanks [ArmaniKorsich](https://gitter.im/ArmaniKorsich) for the inspiration to write this plugin.
 
 ## Release Notes ##
+
+**V1.0.3**
+- Units with uppercase name where not matched on input. Fixed.
+- Internal work, added debug message to ease troubelshooting. 
 
 **V1.0.2**
 - All units with US vs. Imperial versions such as fluid ounces (e.g, flozu vs. flozi or galu vs. gali) can now be used in their US version without the 'u' suffix (e.g, floz or gal).
