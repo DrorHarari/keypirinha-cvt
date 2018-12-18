@@ -177,9 +177,9 @@
 			"name": "Temperature",
 			"desc": "Convert units of temperature",
 			"units": [
-				{"name": "Celsius", "factor": "1", "aliases": ["C"], "offset": "0.0"},
-				{"name": "Fahrenheit", "factor": "5/9", "aliases": ["F"], "offset": "32.0"},
-				{"name": "Kelvin", "factor": "1", "aliases": ["K"], "offset": "273.15"}
+				{"name": "Celsius", "factor": "1", "aliases": ["Cl","C"], "offset": "0.0"},
+				{"name": "Fahrenheit", "factor": "5/9", "aliases": ["Fh","F"], "offset": "32.0"},
+				{"name": "Kelvin", "factor": "1", "aliases": ["Kl","K"], "offset": "273.15"}
 			]
 
 		},
