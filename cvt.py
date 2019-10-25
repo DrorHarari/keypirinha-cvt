@@ -12,6 +12,7 @@ class Cvt(kp.Plugin):
     ITEMCAT_RELOAD_DEFS = kp.ItemCategory.USER_BASE + 2
     ITEMCAT_CREATE_CUSTOM_DEFS = kp.ItemCategory.USER_BASE + 3
 
+    CONFIG_SECTION_MAIN = "main"
     ITEM_LABEL_PREFIX = "Cvt: "
 
     CVTDEF_FILE = "cvtdefs.json"
@@ -32,8 +33,8 @@ class Cvt(kp.Plugin):
             if os.path.exists(cvtdefs):
                 self.info(f"Loading custom conversion definition file '{cvtdefs}'")
                 self.customized_config = True
-                with open(cvtdefs, "r") as f:
-                    defs = json.load(f)                 
+                with open(cvtdefs, "r", encoding="utf-8") as f:
+                    defs = json.load(f)
             else:
                 self.customized_config = False
                 cvtdefs = os.path.join("data/",self.CVTDEF_FILE)
@@ -59,14 +60,13 @@ class Cvt(kp.Plugin):
         except Exception as exc:
             self.warn(f"Failed to evaluate expression '{expr}', {exc}")
             return 1
-            
-    
+
     def on_start(self):
         self.input_parser = re.compile(self.INPUT_PARSER)
         self.safeparser = Parser()
         self.settings = self.load_settings()
         #self._debug = True
-        
+
         self.load_conversions()
 
         self.set_actions(self.ITEMCAT_RESULT, [
@@ -97,11 +97,14 @@ class Cvt(kp.Plugin):
         if flags & kp.Events.PACKCONFIG:
             self.load_conversions()
             self.on_catalog()
-        
+
     def on_catalog(self):
         self.dbg(f"In on_catalog")
         catalog = []
-        
+
+        settings = self.load_settings()
+        self.ITEM_LABEL_PREFIX = settings.get("item_label", section=self.CONFIG_SECTION_MAIN, fallback=self.ITEM_LABEL_PREFIX, unquote=True)
+
         # To discover measures and units, type CVT then proposed supported measures
         for name,measure in self.measures.items():
             catalog.append(self.create_item(
@@ -120,7 +123,7 @@ class Cvt(kp.Plugin):
                 short_desc="Reload the custom conversions file",
                 target="ITEMCAT_RELOAD_DEFS",
                 args_hint=kp.ItemArgsHint.FORBIDDEN,
-                hit_hint=kp.ItemHitHint.IGNORE))       
+                hit_hint=kp.ItemHitHint.IGNORE))
         else: # Else offer an option to customize
             catalog.append(self.create_item(
                 category=self.ITEMCAT_CREATE_CUSTOM_DEFS,
@@ -128,7 +131,7 @@ class Cvt(kp.Plugin):
                 short_desc="Create a custom conversion definition file",
                 target="ITEMCAT_CREATE_CUSTOM_DEFS",
                 args_hint=kp.ItemArgsHint.FORBIDDEN,
-                hit_hint=kp.ItemHitHint.IGNORE))    
+                hit_hint=kp.ItemHitHint.IGNORE))
 
         self.set_catalog(catalog)
 
@@ -140,27 +143,27 @@ class Cvt(kp.Plugin):
 
         if "inverse" in from_unit:
             if in_number == 0:
-                in_number = 1e-30 # TBD better handle divide-by-zero 
+                in_number = 1e-30 # TBD better handle divide-by-zero
             in_number = 1/in_number
-        
+
         converted = (in_number-from_offset) * from_factor / to_factor + to_offset
-        
+
         if "inverse" in to_unit:
             if converted == 0:
                 converted = 1e-30
             converted = 1/converted
-            
+
         return converted
-        
+
     def on_suggest(self, user_input, items_chain):
-        parsed_input = self.input_parser.match(user_input) 
+        parsed_input = self.input_parser.match(user_input)
         self.dbg(f"In suggest, parsed input = '{parsed_input}'")
         if parsed_input is None and len(items_chain) < 1:
             self.dbg(f"In suggest, not matched")
             return
-            
+
         suggestions = []
-        
+
         # User selected one of Cvt's Measures - show units (dummy suggestion)
         if parsed_input is None:
             if not items_chain[-1].target() in self.measures:
@@ -197,7 +200,7 @@ class Cvt(kp.Plugin):
             in_to = in_to.lower()
 
         if  (in_from in self.all_units):
-            measure = self.all_units[in_from] 
+            measure = self.all_units[in_from]
         else:
             self.dbg(f"reject in_from = {in_from}, units = {self.all_units.keys()}")
             return
@@ -216,19 +219,19 @@ class Cvt(kp.Plugin):
         if len(units) == 0:
             comperator = cmp_inexact
             units = list(filter(check_from_unit_match, measure["units"]))
-        
+
         self.dbg(f"#units matched = {len(units)}")
-        if len(units) == 1: 
+        if len(units) == 1:
             # At this point we know the measure and the from unit
             # We propose the target units (filtered down if given to_unit)
             from_unit = units[0]
-            
+
             for unit in measure["units"]:
                 self.dbg(f"unit = {unit['name']}")
                 comperator = cmp_exact if in_done_to else cmp_inexact
                 if not check_to_unit_match(unit):
                     continue
-                    
+
                 self.dbg(f"Added unit = {unit['name']}")
                 converted = self.do_conversion(in_number, from_unit, unit)
                 suggestions.append(self.create_item(
@@ -256,7 +259,7 @@ class Cvt(kp.Plugin):
                 if os.path.exists(custom_cvtdefs):
                     self.warn(f"Customized conversion file '{custom_cvtdefs}' already exists. It hasn't been overwritten")
                 else:
-                    with open(custom_cvtdefs, "w") as f:
+                    with open(custom_cvtdefs, "w", encoding="utf-8") as f:
                         f.write(builtin_cvtdefs_text)
                         f.close()
                     kpu.explore_file(custom_cvtdefs)
