@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 import os
 import sys
+import locale
 from .lib.safeeval import Parser
 
 class Cvt(kp.Plugin):
@@ -12,10 +13,11 @@ class Cvt(kp.Plugin):
     ITEMCAT_RELOAD_DEFS = kp.ItemCategory.USER_BASE + 2
     ITEMCAT_CREATE_CUSTOM_DEFS = kp.ItemCategory.USER_BASE + 3
 
-    CONFIG_SECTION_MAIN = "main"
     ITEM_LABEL_PREFIX = "Cvt: "
+    UNIT_SECTION_PREFIX = "unit/"
 
     CVTDEF_FILE = "cvtdefs.json"
+    CVTDEF_LOCALE_FILE = "cvtdefs-{}.json"
     # Input parser definition
     RE_NUMBER = r'(?P<number>[-+]?[0-9]+(?:\.?[0-9]+)?(?:[eE][-+]?[0-9]+)?)'
     RE_FROM = r'(?P<from>[a-zA-Z]+[a-zA-Z0-9/]*)'
@@ -27,32 +29,119 @@ class Cvt(kp.Plugin):
     def __init__(self):
         super().__init__()
 
-    def load_conversions(self):
+    def read_defs(self, defs_file):
+        defs = None
         try:
-            cvtdefs = os.path.join(kp.user_config_dir(), self.CVTDEF_FILE)
+            # Either file exist in the user profile dir
+            cvtdefs = os.path.join(kp.user_config_dir(), defs_file)
             if os.path.exists(cvtdefs):
                 self.info(f"Loading custom conversion definition file '{cvtdefs}'")
                 self.customized_config = True
                 with open(cvtdefs, "r", encoding="utf-8") as f:
                     defs = json.load(f)
-            else:
-                self.customized_config = False
-                cvtdefs = os.path.join("data/",self.CVTDEF_FILE)
-                defs_text = self.load_text_resource(cvtdefs)
-                defs = json.loads(defs_text)
+            else: # ... or it may be in the plugin
+                try:
+                    self.customized_config = False
+                    cvtdefs = os.path.join("data/", defs_file)
+                    defs_text = self.load_text_resource(cvtdefs)
+                    defs = json.loads(defs_text)
+                    self.dbg(f"Loaded internal conversion definitions '{cvtdefs}'")
+                except Exception as exc:
+                    defs = { "measures" : {} }
+                    self.dbg(f"Did not load internal definitions file '{cvtdefs}', {exc}")
+                    pass
         except Exception as exc:
             self.warn(f"Failed to load definitions file '{cvtdefs}', {exc}")
-            return
 
-        self.measures = {measure["name"] : measure for measure in defs["measures"]}
+        return defs
+
+    # Load measures, merging into existing ones 
+    def add_defs(self, defs):
+        if "measures" in defs:
+            def_measures = defs["measures"]
+            for new_measure_name,new_measure in def_measures.items():
+                new_measure_name = new_measure_name.lower()
+                if not new_measure_name in self.measures:
+                    self.measures[new_measure_name] = new_measure
+                measure = self.measures[new_measure_name]
+                for new_unit_name,new_unit in new_measure["units"].items():
+                    if not new_unit_name in measure["units"]:
+                        measure["units"][new_unit_name] = new_unit
+                    else:
+                        if new_unit["factor"] != measure["units"][new_unit_name]["factor"]:
+                            self.warn(f"Adding aliases to existing unit {new_unit_name} cannot change the unit factor")
+                    for alias in new_unit["aliases"]:
+                        alias = alias.lower()
+                        if alias in self.all_units:
+                            self.warn(f"Alias {alias} is defined multiple times for measure {new_measure_name}")
+                        else:
+                            unit = measure["units"][new_unit_name]
+                            if not alias in unit["aliases"]:
+                                unit["aliases"] = unit["aliases"] + [alias]
+                        self.all_units[alias] = measure
+
+    # Units and aliaes can be customized in the cvt.ini file:
+    # [unit/Distance/Finger]
+    # factor = 0.02
+    # aliases = fg
+    # offset = 0
+    # inverse" = false
+    def read_setting_defs(self):
+        defs = { "measures": { } }
+        measures = defs["measures"]
+        for section in self.settings.sections():
+            if not section.lower().startswith(self.UNIT_SECTION_PREFIX):
+                continue
+
+            measure_name, unit_name = section[len(self.UNIT_SECTION_PREFIX):].strip().split("/", 1)
+            if not measure_name in measures:
+                measures[measure_name] = { "units": { }}
+            measure = measures[measure_name]
+
+            if not unit_name in measure["units"]:
+                measure["units"][unit_name] = { "aliases": [] }
+            unit = measure["units"][unit_name]
+
+            unit["factor"] = self.settings.get_stripped("factor", section=section, fallback="1.0")
+
+            offset = self.settings.get_stripped("offset", section=section, fallback=None)
+            if offset:
+                unit["offset"] = self.settings.get_stripped("offset", section=section, fallback=None)
+
+            inverse = self.settings.get_bool("inverse", section=section, fallback=None)
+            if inverse:
+                unit["inverse"] = self.settings.get_bool("inverse", section=section, fallback=None)
+
+            aliases = self.settings.get_stripped("aliases", section=section, fallback=None)
+            if aliases:
+                unit["aliases"] = unit["aliases"] + self.settings.get_stripped('aliases', section=section, fallback=None).split(",")
+
+            self.dbg(f"Added unit {unit_name} for measure {measure_name} as:\n{repr(unit)}")
+
+        return defs
+
+    def reconfigure(self):
+        self.settings = self.load_settings()
+        self._debug = self.settings.get_bool("debug", "main", False)
+        self.dbg("CVT: Reloading. Debug enabled")
+
         self.all_units = {}
-        for measure in defs["measures"]:
-            for unit in measure["units"]:
-                for alias in unit["aliases"]:
-                    alias = alias.lower()
-                    if alias in self.all_units:
-                        self.warn(f"Alias {alias} is defined multiple times")
-                    self.all_units[alias] = measure
+        self.measures = {}
+
+        defs = self.read_defs(self.CVTDEF_FILE)
+        if defs:
+            self.add_defs(defs)
+
+        locale_name = self.settings.get_bool("locale", "main", locale.getdefaultlocale()[0])
+
+        locale_specific_def = self.CVTDEF_LOCALE_FILE.format(locale_name)
+        defs = self.read_defs(locale_specific_def)
+        if defs:
+            self.add_defs(defs)
+
+        defs = self.read_setting_defs()
+        if defs:
+            self.add_defs(defs)
 
     def evaluate_expr(self, expr):
         try:
@@ -64,10 +153,8 @@ class Cvt(kp.Plugin):
     def on_start(self):
         self.input_parser = re.compile(self.INPUT_PARSER)
         self.safeparser = Parser()
-        self.settings = self.load_settings()
-        #self._debug = True
 
-        self.load_conversions()
+        self.reconfigure()
 
         self.set_actions(self.ITEMCAT_RESULT, [
             self.create_action(
@@ -95,23 +182,19 @@ class Cvt(kp.Plugin):
 
     def on_events(self, flags):
         if flags & kp.Events.PACKCONFIG:
-            self.load_conversions()
+            self.reconfigure()
             self.on_catalog()
 
     def on_catalog(self):
-        self.dbg(f"In on_catalog")
         catalog = []
-
-        settings = self.load_settings()
-        self.ITEM_LABEL_PREFIX = settings.get("item_label", section=self.CONFIG_SECTION_MAIN, fallback=self.ITEM_LABEL_PREFIX, unquote=True)
 
         # To discover measures and units, type CVT then proposed supported measures
         for name,measure in self.measures.items():
             catalog.append(self.create_item(
                 category=kp.ItemCategory.REFERENCE,
-                label=self.ITEM_LABEL_PREFIX + measure["name"],
+                label=self.ITEM_LABEL_PREFIX + name.title(),
                 short_desc=measure["desc"],
-                target=measure["name"],
+                target=name,
                 args_hint=kp.ItemArgsHint.REQUIRED,
                 hit_hint=kp.ItemHitHint.NOARGS))
 
@@ -172,16 +255,16 @@ class Cvt(kp.Plugin):
             measure = self.measures[items_chain[-1].target()]
             self.dbg(f"No parsed input, measure = {measure}")
 
-            for unit in measure["units"]:
+            for unit_name,unit in measure["units"].items():
                 conv_hint = f"factor {unit['factor']}"
                 if "offset" in unit:
                     conv_hint = conv_hint + f", offset {unit['offset']}"
-                self.dbg(f"Added suggestion for unit '{unit['name']}' conv_hint = {conv_hint}")
+                self.dbg(f"Added suggestion for unit '{unit_name}' conv_hint = {conv_hint}")
                 suggestions.append(self.create_item(
                     category=kp.ItemCategory.REFERENCE,
                     label=",".join(unit["aliases"]),
-                    short_desc=f'Conversion unit {unit["name"]}, {conv_hint}',
-                    target=unit["name"],
+                    short_desc=f'Conversion unit {unit_name}, {conv_hint}',
+                    target=unit_name,
                     args_hint=kp.ItemArgsHint.FORBIDDEN,
                     hit_hint=kp.ItemHitHint.IGNORE))
 
@@ -214,11 +297,11 @@ class Cvt(kp.Plugin):
 
         check_from_unit_match = lambda u: not in_from or any([comperator(in_from, alias) for alias in u["aliases"]])
         check_to_unit_match = lambda u: not in_to or any([comperator(in_to, alias) for alias in u["aliases"]])
-        units = list(filter(check_from_unit_match, measure["units"]))
+        units = list(filter(check_from_unit_match, measure["units"].values()))
 
         if len(units) == 0:
             comperator = cmp_inexact
-            units = list(filter(check_from_unit_match, measure["units"]))
+            units = list(filter(check_from_unit_match, measure["units"].values()))
 
         self.dbg(f"#units matched = {len(units)}")
         if len(units) == 1:
@@ -226,18 +309,18 @@ class Cvt(kp.Plugin):
             # We propose the target units (filtered down if given to_unit)
             from_unit = units[0]
 
-            for unit in measure["units"]:
-                self.dbg(f"unit = {unit['name']}")
+            for unit_name,unit in measure["units"].items():
+                self.dbg(f"unit = {unit_name}")
                 comperator = cmp_exact if in_done_to else cmp_inexact
                 if not check_to_unit_match(unit):
                     continue
 
-                self.dbg(f"Added unit = {unit['name']}")
+                self.dbg(f"Added unit = {unit_name}")
                 converted = self.do_conversion(in_number, from_unit, unit)
                 suggestions.append(self.create_item(
                     category=self.ITEMCAT_RESULT,
                     label=format(converted,".5g"),
-                    short_desc=f'{unit["name"]} ({",".join(unit["aliases"])})',
+                    short_desc=f'{unit_name} ({",".join(unit["aliases"])})',
                     target=format(converted,".5g"),
                     args_hint=kp.ItemArgsHint.FORBIDDEN,
                     hit_hint=kp.ItemHitHint.IGNORE,
@@ -249,7 +332,7 @@ class Cvt(kp.Plugin):
         if item and item.category() == self.ITEMCAT_RESULT:
             kpu.set_clipboard(item.data_bag())
         elif item and item.category() == self.ITEMCAT_RELOAD_DEFS:
-            self.load_conversions()
+            self.reconfigure()
             self.on_catalog()
         elif item and item.category() == self.ITEMCAT_CREATE_CUSTOM_DEFS:
             try:
@@ -263,7 +346,7 @@ class Cvt(kp.Plugin):
                         f.write(builtin_cvtdefs_text)
                         f.close()
                     kpu.explore_file(custom_cvtdefs)
-                    self.load_conversions()
+                    self.reconfigure()
                     self.on_catalog()
             except Exception as exc:
                 self.warn(f"Failed to create custom conversion definition file '{custom_cvtdefs}', {exc}")
