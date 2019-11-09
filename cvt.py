@@ -41,7 +41,6 @@ class Cvt(kp.Plugin):
                     defs = json.load(f)
             else: # ... or it may be in the plugin
                 try:
-                    self.customized_config = False
                     cvtdefs = os.path.join("data/", defs_file)
                     defs_text = self.load_text_resource(cvtdefs)
                     defs = json.loads(defs_text)
@@ -123,6 +122,7 @@ class Cvt(kp.Plugin):
     def reconfigure(self):
         self.settings = self.load_settings()
         self._debug = self.settings.get_bool("debug", "main", False)
+        self.customized_config = False
         self.dbg("CVT: Reloading. Debug enabled")
 
         self.all_units = {}
