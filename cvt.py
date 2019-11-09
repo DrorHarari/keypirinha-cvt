@@ -15,6 +15,7 @@ class Cvt(kp.Plugin):
 
     ITEM_LABEL_PREFIX = "Cvt: "
     UNIT_SECTION_PREFIX = "unit/"
+    MEASURE_SECTION_PREFIX = "measure/"
 
     CVTDEF_FILE = "cvtdefs.json"
     CVTDEF_LOCALE_FILE = "cvtdefs-{}.json"
@@ -89,33 +90,42 @@ class Cvt(kp.Plugin):
         defs = { "measures": { } }
         measures = defs["measures"]
         for section in self.settings.sections():
-            if not section.lower().startswith(self.UNIT_SECTION_PREFIX):
-                continue
+            if section.lower().startswith(self.UNIT_SECTION_PREFIX):
+                measure_name, unit_name = section[len(self.UNIT_SECTION_PREFIX):].strip().split("/", 1)
+                if not measure_name in measures:
+                    measures[measure_name] = {
+                        "desc": f"Convert units of area {measure_name}",
+                        "units": { }
+                    }
+                measure = measures[measure_name]
 
-            measure_name, unit_name = section[len(self.UNIT_SECTION_PREFIX):].strip().split("/", 1)
-            if not measure_name in measures:
-                measures[measure_name] = { "units": { }}
-            measure = measures[measure_name]
+                if not unit_name in measure["units"]:
+                    measure["units"][unit_name] = { "aliases": [] }
+                unit = measure["units"][unit_name]
 
-            if not unit_name in measure["units"]:
-                measure["units"][unit_name] = { "aliases": [] }
-            unit = measure["units"][unit_name]
+                unit["factor"] = self.settings.get_stripped("factor", section=section, fallback="1.0")
 
-            unit["factor"] = self.settings.get_stripped("factor", section=section, fallback="1.0")
+                offset = self.settings.get_stripped("offset", section=section, fallback=None)
+                if offset:
+                    unit["offset"] = self.settings.get_stripped("offset", section=section, fallback=None)
 
-            offset = self.settings.get_stripped("offset", section=section, fallback=None)
-            if offset:
-                unit["offset"] = self.settings.get_stripped("offset", section=section, fallback=None)
+                inverse = self.settings.get_bool("inverse", section=section, fallback=None)
+                if inverse:
+                    unit["inverse"] = self.settings.get_bool("inverse", section=section, fallback=None)
 
-            inverse = self.settings.get_bool("inverse", section=section, fallback=None)
-            if inverse:
-                unit["inverse"] = self.settings.get_bool("inverse", section=section, fallback=None)
+                aliases = self.settings.get_stripped("aliases", section=section, fallback=None)
+                if aliases:
+                    unit["aliases"] = unit["aliases"] + self.settings.get_stripped('aliases', section=section, fallback=None).split(",")
 
-            aliases = self.settings.get_stripped("aliases", section=section, fallback=None)
-            if aliases:
-                unit["aliases"] = unit["aliases"] + self.settings.get_stripped('aliases', section=section, fallback=None).split(",")
+                self.dbg(f"Added unit {unit_name} for measure {measure_name} as:\n{repr(unit)}")
+            elif section.lower().startswith(self.MEASURE_SECTION_PREFIX):
+                measure_name = section[len(self.MEASURE_SECTION_PREFIX):].strip()
+                if not measure_name in measures:
+                    measures[measure_name] = { "units": { }}
+                measure = measures[measure_name]
+                measure["desc"] = self.settings.get_stripped("desc", section=section, fallback=f"Convert units of area {measure_name}")
 
-            self.dbg(f"Added unit {unit_name} for measure {measure_name} as:\n{repr(unit)}")
+                self.dbg(f"Added configured measure {measure_name}")
 
         return defs
 
