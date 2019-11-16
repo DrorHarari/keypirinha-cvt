@@ -19,16 +19,23 @@ class Cvt(kp.Plugin):
 
     CVTDEF_FILE = "cvtdefs.json"
     CVTDEF_LOCALE_FILE = "cvtdefs-{}.json"
-    # Input parser definition
-    RE_NUMBER = r'(?P<number>[-+]?[0-9]+(?:\.?[0-9]+)?(?:[eE][-+]?[0-9]+)?)'
-    RE_FROM = r'(?P<from>[a-zA-Z]+[a-zA-Z0-9/]*)'
-    DONE_FROM = r'(?P<done_from>[^a-zA-Z0-9/]+)'
-    RE_TO = r'(?P<to>[a-zA-Z]+[a-zA-Z0-9/]*)'
-    DONE_TO = r'(?P<done_to>[^a-zA-Z0-9/]+)'
-    INPUT_PARSER = f'^{RE_NUMBER}(?=[^0-9])\s*{RE_FROM}?{DONE_FROM}?{RE_TO}?{DONE_TO}?'
 
     def __init__(self):
         super().__init__()
+
+    def get_input_parser(self, decimal_sep):
+        if decimal_sep != ",":
+            decimal_sep = "\."
+
+        # Input parser definition
+        RE_NUMBER = f'(?P<number>[-+]?[0-9]+(?:{decimal_sep}?[0-9]+)?(?:[eE][-+]?[0-9]+)?)'
+        RE_FROM = r'(?P<from>[a-zA-Z]+[a-zA-Z0-9/]*)'
+        DONE_FROM = r'(?P<done_from>[^a-zA-Z0-9/]+)'
+        RE_TO = r'(?P<to>[a-zA-Z]+[a-zA-Z0-9/]*)'
+        DONE_TO = r'(?P<done_to>[^a-zA-Z0-9/]+)'
+        INPUT_PARSER = f'^{RE_NUMBER}(?=[^0-9])\s*{RE_FROM}?{DONE_FROM}?{RE_TO}?{DONE_TO}?'
+
+        return re.compile(INPUT_PARSER)
 
     def read_defs(self, defs_file):
         defs = None
@@ -135,6 +142,18 @@ class Cvt(kp.Plugin):
         self.customized_config = False
         self.dbg("CVT: Reloading. Debug enabled")
 
+        # For debug locale issues
+        #locale.setlocale(locale.LC_ALL,f'nl_NL.utf-8')
+
+        self.format = self.settings.get_enum("format", "main", fallback="common", enum=["common","local"], case_sensitive=False, unquote=True)
+        locale_name = self.settings.get("locale", "main", locale.getdefaultlocale()[0])
+
+        self.decimal_sep = "."
+        if self.format == "local":
+            self.decimal_sep = f"{1.2:n}"[1]     # See how 1.2 if locale-formatted         
+
+        self.input_parser = self.get_input_parser(self.decimal_sep)
+
         self.all_units = {}
         self.measures = {}
 
@@ -142,12 +161,16 @@ class Cvt(kp.Plugin):
         if defs:
             self.add_defs(defs)
 
-        locale_name = self.settings.get_bool("locale", "main", locale.getdefaultlocale()[0])
-
         locale_specific_def = self.CVTDEF_LOCALE_FILE.format(locale_name)
         defs = self.read_defs(locale_specific_def)
         if defs:
             self.add_defs(defs)
+
+        self.definitions = self.settings.get_multiline("definitions", "main", fallback=[], keep_empty_lines=False)
+        for definition_files in self.definitions:
+            defs = self.read_defs(definition_files)
+            if defs:
+                self.add_defs(defs)
 
         defs = self.read_setting_defs()
         if defs:
@@ -161,7 +184,6 @@ class Cvt(kp.Plugin):
             return 1
 
     def on_start(self):
-        self.input_parser = re.compile(self.INPUT_PARSER)
         self.safeparser = Parser()
 
         self.reconfigure()
@@ -282,7 +304,12 @@ class Cvt(kp.Plugin):
             return
 
         # We have a number and (maybe) units
-        in_number = float(parsed_input["number"])
+        matched_number = parsed_input["number"]
+        
+        if self.decimal_sep != ".":
+            matched_number = matched_number.replace(self.decimal_sep, ".")
+     
+        in_number = float(matched_number)
         in_from = parsed_input["from"]
         if in_from:
             in_from = in_from.lower()
@@ -327,14 +354,20 @@ class Cvt(kp.Plugin):
 
                 self.dbg(f"Added unit = {unit_name}")
                 converted = self.do_conversion(in_number, from_unit, unit)
+                if self.format == "common":
+                    converted_clipboard = converted_display = f"{converted:.5g}"                   
+                else:
+                    converted_display = locale.format_string("%.5g", converted, grouping=True)
+                    converted_clipboard = locale.format_string("%.5g", converted, grouping=False)
+
                 suggestions.append(self.create_item(
                     category=self.ITEMCAT_RESULT,
-                    label=format(converted,".5g"),
+                    label= converted_display, 
                     short_desc=f'{unit_name} ({",".join(unit["aliases"])})',
-                    target=format(converted,".5g"),
+                    target=converted_display,
                     args_hint=kp.ItemArgsHint.FORBIDDEN,
                     hit_hint=kp.ItemHitHint.IGNORE,
-                    data_bag=repr(converted)))
+                    data_bag=converted_clipboard))
 
         self.set_suggestions(suggestions, kp.Match.ANY, kp.Sort.NONE)
 

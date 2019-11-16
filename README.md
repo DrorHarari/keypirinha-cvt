@@ -43,9 +43,9 @@ You don't need to remember the measure names - a list of measure names will be o
 
 ![Example: see mass measure units and their conversion rules](images/example-measure.png?raw=true)
 
-## Customizing Existing Conversions ##
+## Customizing Conversions ##
 
-You can edit the Cvt.ini configuration file and add units to existing measures or add aliases. To do so, just add a section based on the following pattern:
+You can add new conversion units and aliases to existing units via the Cvt.ini configuration file. To do so, just add a section based on the following pattern:
 
 ```
 [unit/{measure name}/{unit name}]
@@ -55,7 +55,7 @@ offset = {number to substract after multiplying by factor}
 inverse = {if true use the inverse of the factor}
 ```
 
-For example, to add a "Finger" distance unit which is equivalent to 2 cm with the alias 'fg' we can use the following definition (note that for Distance, the main unit is meter as can be seen by typing DISTANCE+<tab> in Keypirinha)
+For example, to add a "Finger" distance unit which is equivalent to 2 cm with the alias 'fg' we can use the following definition (note that for Distance, the reference unit is Meter as it has the conversion factor of 1.0 as can be seen by typing DISTANCE+<tab> in Keypirinha).
 
 ```
 [unit/Distance/Finger]
@@ -65,18 +65,22 @@ aliases = fg
 
 To add an alias "hdm" for Centimeters unit of distance measure use the following (note that the unit must be specified with exdact case):
 ```
-
 [unit/distance/Centimetres]
 aliases = hdm
 ```
 
-## Customizing Conversions ##
+## Adding New Conversions Measures ##
 
-Cvt lets you customize the measures and units it supports. To customize the list, enter the "Cvt: Customize coversions" action in the box - this will place a copy of the conversion definition file cvtdefs.json in the user configuration directory (`Keypirinha\portable\Profile\User`). Make your changes to the measure or units definitions and then enter "Cvt: Reload custom coversions" action in the box. 
+While one can add measures via the Cvt.ini file, if adding new measures with a lot of units, it is better to do it by means of a custom conversion definition file. Cvt maintains an internal conversion definition file called cvtdefs.json and you can export it to the User folder by entering the ```"Cvt: Customize coversions"``` action in the box. This will place a copy of the conversion definition file ```cvtdefs.json``` in the User configuration directory (```Keypirinha\portable\Profile\User```). Rename this file, say to ```my-conversions.json``` and edit it, keeping the structure but leaving only the new measures you want to add. Then tell Cvt about it by adding a ```definitions``` items to the ```[main]``` section as in:
 
-When a custom conversion file is used, the built-in conversion file is ignored so you won't see new measures and units that come with Cvt.
+```
+[main]
+definition = 
+    my-conversions.json
+	another-conversion.json
+```
 
-If you want to create a conversion definition file that will add measures for a specific locale, you can use the name ```cvtdefs-{locale-name}.json```', for example the file ``cvtdefs-ja_JP.json``` will be loaded in addition to what's in ```cvtdefs.json' when running on Japanese machine.
+If you want to create a conversion definition file that will add measures for a specific locale, you can use the name ```cvtdefs-{locale-name}.json```', for example the file ``cvtdefs-ja_JP.json``` will be loaded in addition to what's loaded by other means when running on Japanese machine.
 
 ## Installation ##
 
@@ -97,13 +101,16 @@ For manual installation simply download the cvt.keypirinha-package file from the
 * Thanks [Shuzo Iwasaki](https://github.com/shuGH) for internationalization improvements
 
 ## Release Notes ##
+**V2.1.0**
+- Added ```definitions``` configuration item in the ```[main]``` section of ```Cvt.ini``` to add custom conversion definition files. 
+- Added ```format``` configuration item in the ```[main]``` section of ```Cvt.ini``` to allow Cvt to use locale-specific numeric formatting on input and output. Valid values are ```common``` (the default) and ```local``` to use current locale settings.
 
 **V2.0.0**
 - BERAKING CHANGE. The format of the cvtdefs.json was simplified to enable conversion customizations via the Cvt.ini configuration file. The conversion from the old format is simple but in most cases, if the customization was just about adding some units, then the now just those units need to be added.
-- New ``cvtdefs-{locale-name}.json```` pattern was added.
+- New ```cvtdefs-{locale-name}.json``` pattern was added.
 - New Cvt.ini boolean configuration item 'debug' added to the main section to troubleshoot conversion definition.
-- New Cvt.ini string configuration item 'locale' added to the main section to control the locale-specific version of ````cvtdefs-{locale}.json`` to load.
-- Now it is possible to customize existing conversions using the Cvt.ini configuration file (see there for examples).
+- New Cvt.ini string configuration item ```locale``` added to the main section to control the locale-specific version of ```cvtdefs-{locale}.json``` to load.
+- Now it is possible to customize existing conversions and add new ones using the ```Cvt.ini``` configuration file (see there for examples).
 
 **V1.0.3**
 - Units with uppercase name where not matched on input. Fixed.
