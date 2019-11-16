@@ -71,16 +71,16 @@ aliases = hdm
 
 ## Adding New Conversions Measures ##
 
-While one can add measures via the Cvt.ini file, if adding new measures with a lot of units, it is better to do it by means of a custom conversion definition file. Cvt maintains an internal conversion definition file called cvtdefs.json and you can export it to the User folder by entering the ```"Cvt: Customize coversions"``` action in the box. This will place a copy of the conversion definition file ```cvtdefs.json``` in the User configuration directory (```Keypirinha\portable\Profile\User```). Rename this file, say to ```my-conversions.json``` and edit it, keeping the structure but leaving only the new measures you want to add. Then tell Cvt about it by adding a ```definitions``` items to the ```[main]``` section as in:
+While one can add measures via the Cvt.ini file, if adding new measures with a lot of units, it is better to do it by means of a custom conversion definition file. Cvt maintains an internal conversion definition file called cvtdefs.json and you can export it to the User folder by entering the ```"Cvt: Customize coversions"``` action in the box. This will place a copy of the conversion definition file ```cvtdefs.json``` in the User configuration directory (```Keypirinha\portable\Profile\User```). Rename this file to, say, ```my-conversions.json``` and edit it, keeping the structure but leaving only the new measures you want to add. Then tell Cvt about it by adding a ```definitions``` items to the ```[main]``` section as in:
 
 ```
 [main]
 definition = 
     my-conversions.json
-	another-conversion.json
+    another-conversion.json
 ```
 
-If you want to create a conversion definition file that will add measures for a specific locale, you can use the name ```cvtdefs-{locale-name}.json```', for example the file ``cvtdefs-ja_JP.json``` will be loaded in addition to what's loaded by other means when running on Japanese machine.
+If you want to create a conversion definition file that will add measures for a specific locale, you can use the name ```cvtdefs-{locale-name}.json```. For example, the file ```cvtdefs-ja_JP.json``` will be loaded in addition to what's loaded by other means when running on Japanese machine.
 
 ## Installation ##
 
