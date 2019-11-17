@@ -1,5 +1,7 @@
 import keypirinha as kp
+import keypirinha_wintypes as kpwt
 import keypirinha_util as kpu
+import traceback
 import json
 import re
 from pathlib import Path
@@ -22,6 +24,53 @@ class Cvt(kp.Plugin):
 
     def __init__(self):
         super().__init__()
+
+    def get_separators(self):
+        # [main] decimal_separator
+        decimal_separator = "."
+        thousand_separator = ""
+        transmap_output = str.maketrans("", "", ",")
+        config_decsep = self.settings.get_enum("decimal_separator", "main", fallback="dot", enum=["dot", "comma", "auto"])
+        if config_decsep == "auto":
+            thousand_separator = " "
+            try:
+                # use the GetLocaleInfoEx windows api to get the decimal and
+                # thousand separators configured by system's user
+                GetLocaleInfoEx = kpwt.declare_func(
+                    kpwt.kernel32, "GetLocaleInfoEx", ret=kpwt.ct.c_int,
+                    args=[kpwt.LPCWSTR, kpwt.DWORD, kpwt.PWSTR, kpwt.ct.c_int])
+                LOCALE_SDECIMAL = 0x0000000E
+                LOCALE_STHOUSAND = 0x0000000F
+
+                # decimal separator
+                buf = kpwt.ct.create_unicode_buffer(10)
+                res = GetLocaleInfoEx(None, LOCALE_SDECIMAL, buf, len(buf))
+                if res == 2 and len(buf.value) == res - 1 and buf.value == ",":
+                    decimal_separator = ","
+                # thousand separator
+                # quite awful to have a try block here but we take advantage of
+                # having GetLocaleInfoEx already defined
+                try:
+                    buf = kpwt.ct.create_unicode_buffer(10)
+                    res = GetLocaleInfoEx(None, LOCALE_STHOUSAND, buf, len(buf))
+                    if res == 2 and len(buf.value) == res - 1:
+                        thousand_separator = buf.value
+                except:
+                    traceback.print_exc()
+                
+                transmap_output = str.maketrans(".,", f"{decimal_separator}{thousand_separator}")
+            except:
+                self.warn(
+                    "Failed to get system user decimal and thousand separators. " +
+                    "Falling back to default (" + config_decsep + ")...")
+                traceback.print_exc()
+            self.info(f'Using "{decimal_separator}" as a decimal separator')
+        if config_decsep == "comma":
+            decimal_separator = ","
+            thousand_separator = " "
+            transmap_output = str.maketrans(".,", f"{decimal_separator}{thousand_separator}")
+
+        return (decimal_separator, thousand_separator, transmap_output)
 
     def get_input_parser(self, decimal_sep):
         if decimal_sep != ",":
@@ -142,17 +191,10 @@ class Cvt(kp.Plugin):
         self.customized_config = False
         self.dbg("CVT: Reloading. Debug enabled")
 
-        # For debug locale issues
-        #locale.setlocale(locale.LC_ALL,f'nl_NL.utf-8')
-
-        self.format = self.settings.get_enum("format", "main", fallback="common", enum=["common","local"], case_sensitive=False, unquote=True)
+        self.decimal_separator, self.thousand_separator, self.transmap_output = self.get_separators()
         locale_name = self.settings.get("locale", "main", locale.getdefaultlocale()[0])
 
-        self.decimal_sep = "."
-        if self.format == "local":
-            self.decimal_sep = f"{1.2:n}"[1]     # See how 1.2 if locale-formatted         
-
-        self.input_parser = self.get_input_parser(self.decimal_sep)
+        self.input_parser = self.get_input_parser(self.decimal_separator)
 
         self.all_units = {}
         self.measures = {}
@@ -306,8 +348,8 @@ class Cvt(kp.Plugin):
         # We have a number and (maybe) units
         matched_number = parsed_input["number"]
         
-        if self.decimal_sep != ".":
-            matched_number = matched_number.replace(self.decimal_sep, ".")
+        if self.decimal_separator != ".":
+            matched_number = matched_number.replace(self.decimal_separator, ".")
      
         in_number = float(matched_number)
         in_from = parsed_input["from"]
@@ -354,11 +396,11 @@ class Cvt(kp.Plugin):
 
                 self.dbg(f"Added unit = {unit_name}")
                 converted = self.do_conversion(in_number, from_unit, unit)
-                if self.format == "common":
-                    converted_clipboard = converted_display = f"{converted:.5g}"                   
-                else:
-                    converted_display = locale.format_string("%.5g", converted, grouping=True)
-                    converted_clipboard = locale.format_string("%.5g", converted, grouping=False)
+
+                converted_display = f"{converted:,.9g}".translate(self.transmap_output)
+                converted_clipboard = f"{converted:.9g}"
+                if self.decimal_separator != ".":
+                    converted_clipboard = converted_clipboard.replace(".", self.decimal_separator)                 
 
                 suggestions.append(self.create_item(
                     category=self.ITEMCAT_RESULT,

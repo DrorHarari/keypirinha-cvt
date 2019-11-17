@@ -101,9 +101,9 @@ For manual installation simply download the cvt.keypirinha-package file from the
 * Thanks [Shuzo Iwasaki](https://github.com/shuGH) for internationalization improvements
 
 ## Release Notes ##
-**V2.1.0**
+**V2.1.1**
 - Added ```definitions``` configuration item in the ```[main]``` section of ```Cvt.ini``` to add custom conversion definition files. 
-- Added ```format``` configuration item in the ```[main]``` section of ```Cvt.ini``` to allow Cvt to use locale-specific numeric formatting on input and output. Valid values are ```common``` (the default) and ```local``` to use current locale settings.
+- Added ```decimal_separator``` configuration item in the ```[main]``` section of ```Cvt.ini``` to allow Cvt to use locale-specific numeric formatting on input and output. Valid values are ```dot``` (the default), ```comma``` and ```auto``` (based on Windows' regional settings).
 
 **V2.0.0**
 - BERAKING CHANGE. The format of the cvtdefs.json was simplified to enable conversion customizations via the Cvt.ini configuration file. The conversion from the old format is simple but in most cases, if the customization was just about adding some units, then the now just those units need to be added.
