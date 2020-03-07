@@ -121,6 +121,8 @@ class Cvt(kp.Plugin):
                     self.measures[new_measure_name] = new_measure
                 measure = self.measures[new_measure_name]
                 for new_unit_name,new_unit in new_measure["units"].items():
+                    if not new_measure_name in self.measure_aliases:
+                        self.measure_aliases[new_measure_name] = {}
                     if not new_unit_name in measure["units"]:
                         measure["units"][new_unit_name] = new_unit
                     else:
@@ -135,6 +137,7 @@ class Cvt(kp.Plugin):
                             if not alias in unit["aliases"]:
                                 unit["aliases"] = unit["aliases"] + [alias]
                         self.all_units[alias] = measure
+                        self.measure_aliases[new_measure_name][alias] = measure
 
     # Units and aliaes can be customized in the cvt.ini file:
     # [unit/Distance/Finger]
@@ -198,6 +201,7 @@ class Cvt(kp.Plugin):
 
         self.all_units = {}
         self.measures = {}
+        self.measure_aliases = {}
 
         defs = self.read_defs(self.CVTDEF_FILE)
         if defs:
@@ -319,52 +323,59 @@ class Cvt(kp.Plugin):
             self.dbg(f"In suggest, not matched")
             return
 
-        suggestions = []
+        in_from = ""
+        if parsed_input:
+            # We have a number and (maybe) units
+            matched_number = parsed_input["number"]
+            if self.decimal_separator != ".":
+                matched_number = matched_number.replace(self.decimal_separator, ".")
+         
+            in_number = float(matched_number)
 
-        # User selected one of Cvt's Measures - show units (dummy suggestion)
-        if parsed_input is None:
-            if not items_chain[-1].target() in self.measures:
+            in_from = parsed_input["from"]
+            if in_from:
+                in_from = in_from.lower()
+            in_done_from = (parsed_input["done_from"] or False) and len(parsed_input["done_from"]) > 0
+            in_to = parsed_input["to"]
+            in_done_to = (parsed_input["done_to"] or False) and len(parsed_input["done_to"]) > 0
+            if in_to:
+                in_to = in_to.lower()
+
+        # User selected one of Cvt's Measures - show unit suggestions
+        all_units = self.all_units
+        measure = None
+        if len(items_chain) == 1:
+            if not items_chain[0].target() in self.measures:
                 return
 
-            measure = self.measures[items_chain[-1].target()]
-            self.dbg(f"No parsed input, measure = {measure}")
+            measure_name = items_chain[0].target()
+            measure = self.measures[measure_name]
 
-            for unit_name,unit in measure["units"].items():
-                conv_hint = f"factor {unit['factor']}"
-                if "offset" in unit:
-                    conv_hint = conv_hint + f", offset {unit['offset']}"
-                self.dbg(f"Added suggestion for unit '{unit_name}' conv_hint = {conv_hint}")
-                suggestions.append(self.create_item(
-                    category=kp.ItemCategory.REFERENCE,
-                    label=",".join(unit["aliases"]),
-                    short_desc=f'Conversion unit {unit_name}, {conv_hint}',
-                    target=unit_name,
-                    args_hint=kp.ItemArgsHint.FORBIDDEN,
-                    hit_hint=kp.ItemHitHint.IGNORE))
+            all_units = self.measure_aliases[measure_name]
+            if not parsed_input or (in_from and not(in_from in all_units.keys())):
+                self.dbg(f"on_suggest: No parsed input, measure = {measure}")
 
-            self.set_suggestions(suggestions, kp.Match.ANY, kp.Sort.NONE)
-            return
+                suggestions = []
+                for unit_name,unit in measure["units"].items():
+                    conv_hint = f"factor {unit['factor']}"
+                    if "offset" in unit:
+                        conv_hint = conv_hint + f", offset {unit['offset']}"
+                    self.dbg(f"Added suggestion for unit '{unit_name}' conv_hint = {conv_hint}")
+                    suggestions.append(self.create_item(
+                        category=kp.ItemCategory.REFERENCE,
+                        label=",".join(unit["aliases"]),
+                        short_desc=f'Conversion unit {unit_name}, {conv_hint}',
+                        target=unit_name,
+                        args_hint=kp.ItemArgsHint.FORBIDDEN,
+                        hit_hint=kp.ItemHitHint.IGNORE))
 
-        # We have a number and (maybe) units
-        matched_number = parsed_input["number"]
-        
-        if self.decimal_separator != ".":
-            matched_number = matched_number.replace(self.decimal_separator, ".")
-     
-        in_number = float(matched_number)
-        in_from = parsed_input["from"]
-        if in_from:
-            in_from = in_from.lower()
-        in_done_from = (parsed_input["done_from"] or False) and len(parsed_input["done_from"]) > 0
-        in_to = parsed_input["to"]
-        in_done_to = (parsed_input["done_to"] or False) and len(parsed_input["done_to"]) > 0
-        if in_to:
-            in_to = in_to.lower()
+                self.set_suggestions(suggestions, kp.Match.ANY, kp.Sort.NONE)
+                return
 
-        if  (in_from in self.all_units):
-            measure = self.all_units[in_from]
+        if in_from in all_units:
+            measure = all_units[in_from]
         else:
-            self.dbg(f"reject in_from = {in_from}, units = {self.all_units.keys()}")
+            self.dbg(f"reject in_from = {in_from}, units = {all_units.keys()}")
             return
 
         if not "units" in measure:
@@ -383,6 +394,7 @@ class Cvt(kp.Plugin):
             units = list(filter(check_from_unit_match, measure["units"].values()))
 
         self.dbg(f"#units matched = {len(units)}")
+        suggestions = []
         if len(units) == 1:
             # At this point we know the measure and the from unit
             # We propose the target units (filtered down if given to_unit)
@@ -394,24 +406,27 @@ class Cvt(kp.Plugin):
                 if not check_to_unit_match(unit):
                     continue
 
-                self.dbg(f"Added unit = {unit_name}")
-                converted = self.do_conversion(in_number, from_unit, unit)
-
-                converted_display = f"{converted:,.9g}".translate(self.transmap_output)
-                converted_clipboard = f"{converted:.9g}"
-                if self.decimal_separator != ".":
-                    converted_clipboard = converted_clipboard.replace(".", self.decimal_separator)                 
-
-                suggestions.append(self.create_item(
-                    category=self.ITEMCAT_RESULT,
-                    label= converted_display, 
-                    short_desc=f'{unit_name} ({",".join(unit["aliases"])})',
-                    target=converted_display,
-                    args_hint=kp.ItemArgsHint.FORBIDDEN,
-                    hit_hint=kp.ItemHitHint.IGNORE,
-                    data_bag=converted_clipboard))
+                self.add_conversion_result(suggestions, from_unit, unit, unit_name, in_number)
 
         self.set_suggestions(suggestions, kp.Match.ANY, kp.Sort.NONE)
+
+    def add_conversion_result(self, suggestions, from_unit, to_unit, to_unit_name, in_number):
+        self.dbg(f"Adding conversion result to {to_unit_name}")
+        converted = self.do_conversion(in_number, from_unit, to_unit)
+
+        converted_display = f"{converted:,.9g}".translate(self.transmap_output)
+        converted_clipboard = f"{converted:.9g}"
+        if self.decimal_separator != ".":
+            converted_clipboard = converted_clipboard.replace(".", self.decimal_separator)                 
+
+        suggestions.append(self.create_item(
+            category=self.ITEMCAT_RESULT,
+            label= converted_display, 
+            short_desc=f'{to_unit_name} ({",".join(to_unit["aliases"])})',
+            target=converted_display,
+            args_hint=kp.ItemArgsHint.FORBIDDEN,
+            hit_hint=kp.ItemHitHint.IGNORE,
+            data_bag=converted_clipboard))
 
     def on_execute(self, item, action):
         if item and item.category() == self.ITEMCAT_RESULT:
