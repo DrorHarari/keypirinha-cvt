@@ -101,6 +101,10 @@ For manual installation simply download the cvt.keypirinha-package file from the
 * Thanks [Shuzo Iwasaki](https://github.com/shuGH) for internationalization improvements
 
 ## Release Notes ##
+**V2.2.0**
+- Add aliases with '/' replaced by 'p' (e.g., l/100km can also be written as lphkm)
+- When typing a measure name (e.g. Distance) and Tab one can now type a number and unit to convert. 
+
 **V2.1.1**
 - Added ```definitions``` configuration item in the ```[main]``` section of ```Cvt.ini``` to add custom conversion definition files. 
 - Added ```decimal_separator``` configuration item in the ```[main]``` section of ```Cvt.ini``` to allow Cvt to use locale-specific numeric formatting on input and output. Valid values are ```dot``` (the default), ```comma``` and ```auto``` (based on Windows' regional settings).
