@@ -72,9 +72,9 @@
 		"Speed": {
 			"desc": "Convert units of speed",
 			"units": {
-				"Metres per second": { "factor": "1", "aliases": ["m/s"]},
-				"Kilometres per hour": { "factor": "1000/3600", "aliases": ["km/h"]},
-				"Feet per second": { "factor": "0.3048", "aliases": ["ft/s"]},
+				"Metres per second": { "factor": "1", "aliases": ["m/s","mps"]},
+				"Kilometres per hour": { "factor": "1000/3600", "aliases": ["km/h","kmph"]},
+				"Feet per second": { "factor": "0.3048", "aliases": ["ft/s","ftps"]},
 				"Miles per hour": { "factor": "1609.344/3600", "aliases": ["mph"]},
 				"Knots": { "factor": "1852/3600", "aliases": ["kt"]}
 			}
@@ -116,7 +116,7 @@
 				"Millibar": { "factor": "100", "aliases": ["mbar"]},
 				"Bar": { "factor": "100*1000", "aliases": ["bar"]},
 				"Atmosphere (std)": { "factor": "101325.0", "aliases": ["atm"]},
-				"Kilograms per sq. cm": { "factor": "98066.5", "aliases": ["kg/cm2"]},
+				"Kilograms per sq. cm": { "factor": "98066.5", "aliases": ["kg/cm2","kgpcm2"]},
 				"Pounds per sq. inch": { "factor": "6894.75729", "aliases": ["psi"]},
 				"Inches of mercury": { "factor": "3386.389", "aliases": ["in Hg"]},
 				"Torr": { "factor": "101325/760", "aliases": ["Torr"]}
@@ -140,8 +140,8 @@
 				"Watts": { "factor": "1", "aliases": ["W"]},
 				"Kilowatts": { "factor": "1000", "aliases": ["kW"]},
 				"Megawatts": { "factor": "1000*1000", "aliases": ["MW"]},
-				"Calories per sec": { "factor": "4.1868", "aliases": ["cal/s"]},
-				"BTUs per hour": { "factor": "1055.05585262/3600", "aliases": ["BTU/h"]},
+				"Calories per sec": { "factor": "4.1868", "aliases": ["cal/s","calps"]},
+				"BTUs per hour": { "factor": "1055.05585262/3600", "aliases": ["BTU/h","BTUph"]},
 				"Horsepower (mech)": { "factor": "745.699872", "aliases": ["hpi"]},
 				"Horsepower (metric)": { "factor": "735.49875", "aliases": ["hpm"]}
 			}
@@ -149,8 +149,8 @@
 		"Fuel Consumption": {
 			"desc": "Convert units of fuel consumption",
 			"units": {
-				"Kilometres per litre": { "factor": "1", "aliases": ["km/l"]},
-				"Litres per 100km": { "factor": "100", "aliases": ["l/100km"], "inverse": true},
+				"Kilometres per litre": { "factor": "1", "aliases": ["km/l","kmpl"]},
+				"Litres per 100km": { "factor": "100", "aliases": ["l/100km","lphkm"], "inverse": true},
 				"Miles per gallon (Imp)": { "factor": "1.609344/4.54609", "aliases": ["mpgi"]},
 				"Miles per gallon (US)": { "factor": "1.609344/3.785411784", "aliases": ["mpg","mpgu"]}
 			}
