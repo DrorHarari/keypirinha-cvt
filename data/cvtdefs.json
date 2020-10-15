@@ -76,7 +76,9 @@
 				"Kilometres per hour": { "factor": "1000/3600", "aliases": ["km/h","kmph"]},
 				"Feet per second": { "factor": "0.3048", "aliases": ["ft/s","ftps"]},
 				"Miles per hour": { "factor": "1609.344/3600", "aliases": ["mph"]},
-				"Knots": { "factor": "1852/3600", "aliases": ["kt"]}
+				"Knots": { "factor": "1852/3600", "aliases": ["kt"]},
+				"Minutes per kilometre": { "factor": "1000/60", "aliases": ["min/km","minpkm"], "inverse": true},
+				"Minutes per mile": { "factor": "1609.344/60", "aliases": ["min/mi","minpmi"], "inverse": true}
 			}
 		},
 		"Time": {
