@@ -32,7 +32,8 @@
 				"Sq. Feet": { "factor": "0.3048 * 0.3048", "aliases": ["ft2"]},
 				"Sq. Yards": { "factor": "0.9144 * 0.9144", "aliases": ["yd2"]},
 				"Acres": { "factor": "0.9144 * 0.9144 * 4840", "aliases": ["ac"]},
-				"Sq. Miles": { "factor": "1609.344 * 1609.344", "aliases": ["mi2"]}
+				"Sq. Miles": { "factor": "1609.344 * 1609.344", "aliases": ["mi2"]},
+				"Dunams": { "factor": "1000", "aliases": ["du"]}
 			}
 		},
 		"Volume": {

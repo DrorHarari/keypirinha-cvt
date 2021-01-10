@@ -102,8 +102,11 @@ For manual installation simply download the cvt.keypirinha-package file from the
 * Thanks [vivancev86](https://github.com/vivancev86) for some speed units.
 
 ## Release Notes ##
+**V2.2.1**
+- Added the Dunam measure of area (=1000m^2).
+
 **V2.2.0**
-- Add aliases with '/' replaced by 'p' (e.g., l/100km can also be written as lphkm)
+- Added aliases with '/' replaced by 'p' (e.g., l/100km can also be written as lphkm).
 - When typing a measure name (e.g. Distance) and Tab one can now type a number and unit to convert. 
 
 **V2.1.1**
