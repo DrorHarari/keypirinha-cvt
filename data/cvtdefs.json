@@ -42,6 +42,8 @@
 				"Millilitres (cc)": { "factor": "1.0e-6", "aliases": ["ml"]},
 				"Litres": { "factor": "0.001", "aliases": ["l"]},
 				"Cu. Metres": { "factor": "1.0", "aliases": ["m3"]},
+				"Cu. Millimetres": { "factor": "1.0e-9", "aliases": ["mm3"]},
+				"Cu. Centimetres": { "factor": "1.0e-6", "aliases": ["cm3"]},
 				"Cu. Inches": { "factor": "0.0254*0.0254*0.0254", "aliases": ["in3"]},
 				"Cu. Feet": { "factor": "0.3048*0.3048*0.3048", "aliases": ["ft3"]},
 				"Cu. Yards": { "factor": "0.9144*0.9144*0.9144", "aliases": ["yd3"]},
