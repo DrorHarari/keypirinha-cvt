@@ -4,11 +4,10 @@ import keypirinha_util as kpu
 import traceback
 import json
 import re
-from pathlib import Path
 import os
-import sys
 import locale
 from .lib.safeeval import Parser
+
 
 class Cvt(kp.Plugin):
     ITEMCAT_RESULT = kp.ItemCategory.USER_BASE + 1
@@ -55,14 +54,13 @@ class Cvt(kp.Plugin):
                     res = GetLocaleInfoEx(None, LOCALE_STHOUSAND, buf, len(buf))
                     if res == 2 and len(buf.value) == res - 1:
                         thousand_separator = buf.value
-                except:
+                except Exception:
                     traceback.print_exc()
-                
+
                 transmap_output = str.maketrans(".,", f"{decimal_separator}{thousand_separator}")
-            except:
-                self.warn(
-                    "Failed to get system user decimal and thousand separators. " +
-                    "Falling back to default (" + config_decsep + ")...")
+            except Exception:
+                self.warn("Failed to get system user decimal and thousand separators. " +	# noqa
+                          "Falling back to default (" + config_decsep + ")...")
                 traceback.print_exc()
             self.info(f'Using "{decimal_separator}" as a decimal separator')
         if config_decsep == "comma":
@@ -74,7 +72,7 @@ class Cvt(kp.Plugin):
 
     def get_input_parser(self, decimal_sep):
         if decimal_sep != ",":
-            decimal_sep = "\."
+            decimal_sep = "\\."
 
         # Input parser definition
         RE_NUMBER = f'(?P<number>[-+]?[0-9]+(?:{decimal_sep}?[0-9]+)?(?:[eE][-+]?[0-9]+)?)'
@@ -82,7 +80,7 @@ class Cvt(kp.Plugin):
         DONE_FROM = r'(?P<done_from>[^a-zA-Z0-9/]+)'
         RE_TO = r'(?P<to>[a-zA-Z]+[a-zA-Z0-9/]*)'
         DONE_TO = r'(?P<done_to>[^a-zA-Z0-9/]+)'
-        INPUT_PARSER = f'^{RE_NUMBER}(?=[^0-9])\s*{RE_FROM}?{DONE_FROM}?{RE_TO}?{DONE_TO}?'
+        INPUT_PARSER = f'^{RE_NUMBER}(?=[^0-9])\\s*{RE_FROM}?{DONE_FROM}?{RE_TO}?{DONE_TO}?'
 
         return re.compile(INPUT_PARSER)
 
@@ -96,14 +94,14 @@ class Cvt(kp.Plugin):
                 self.customized_config = True
                 with open(cvtdefs, "r", encoding="utf-8") as f:
                     defs = json.load(f)
-            else: # ... or it may be in the plugin
+            else:  # ... or it may be in the plugin
                 try:
                     cvtdefs = os.path.join("data/", defs_file)
                     defs_text = self.load_text_resource(cvtdefs)
                     defs = json.loads(defs_text)
                     self.dbg(f"Loaded internal conversion definitions '{cvtdefs}'")
                 except Exception as exc:
-                    defs = { "measures" : {} }
+                    defs = {"measures": {}}
                     self.dbg(f"Did not load internal definitions file '{cvtdefs}', {exc}")
                     pass
         except Exception as exc:
@@ -111,19 +109,19 @@ class Cvt(kp.Plugin):
 
         return defs
 
-    # Load measures, merging into existing ones 
+    # Load measures, merging into existing ones
     def add_defs(self, defs):
         if "measures" in defs:
             def_measures = defs["measures"]
-            for new_measure_name,new_measure in def_measures.items():
+            for new_measure_name, new_measure in def_measures.items():
                 new_measure_name = new_measure_name.lower()
-                if not new_measure_name in self.measures:
+                if new_measure_name not in self.measures:
                     self.measures[new_measure_name] = new_measure
                 measure = self.measures[new_measure_name]
-                for new_unit_name,new_unit in new_measure["units"].items():
-                    if not new_measure_name in self.measure_aliases:
+                for new_unit_name, new_unit in new_measure["units"].items():
+                    if new_measure_name not in self.measure_aliases:
                         self.measure_aliases[new_measure_name] = {}
-                    if not new_unit_name in measure["units"]:
+                    if new_unit_name not in measure["units"]:
                         measure["units"][new_unit_name] = new_unit
                     else:
                         if new_unit["factor"] != measure["units"][new_unit_name]["factor"]:
@@ -134,7 +132,7 @@ class Cvt(kp.Plugin):
                             self.warn(f"Alias {alias} is defined multiple times for measure {new_measure_name}")
                         else:
                             unit = measure["units"][new_unit_name]
-                            if not alias in unit["aliases"]:
+                            if alias not in unit["aliases"]:
                                 unit["aliases"] = unit["aliases"] + [alias]
                         self.all_units[alias] = measure
                         self.measure_aliases[new_measure_name][alias] = measure
@@ -146,20 +144,20 @@ class Cvt(kp.Plugin):
     # offset = 0
     # inverse" = false
     def read_setting_defs(self):
-        defs = { "measures": { } }
+        defs = {"measures": {}}
         measures = defs["measures"]
         for section in self.settings.sections():
             if section.lower().startswith(self.UNIT_SECTION_PREFIX):
                 measure_name, unit_name = section[len(self.UNIT_SECTION_PREFIX):].strip().split("/", 1)
-                if not measure_name in measures:
+                if measure_name not in measures:
                     measures[measure_name] = {
                         "desc": f"Convert units of area {measure_name}",
-                        "units": { }
+                        "units": {}
                     }
                 measure = measures[measure_name]
 
-                if not unit_name in measure["units"]:
-                    measure["units"][unit_name] = { "aliases": [] }
+                if unit_name not in measure["units"]:
+                    measure["units"][unit_name] = {"aliases": []}
                 unit = measure["units"][unit_name]
 
                 unit["factor"] = self.settings.get_stripped("factor", section=section, fallback="1.0")
@@ -179,8 +177,8 @@ class Cvt(kp.Plugin):
                 self.dbg(f"Added unit {unit_name} for measure {measure_name} as:\n{repr(unit)}")
             elif section.lower().startswith(self.MEASURE_SECTION_PREFIX):
                 measure_name = section[len(self.MEASURE_SECTION_PREFIX):].strip()
-                if not measure_name in measures:
-                    measures[measure_name] = { "units": { }}
+                if measure_name not in measures:
+                    measures[measure_name] = {"units": {}}
                 measure = measures[measure_name]
                 measure["desc"] = self.settings.get_stripped("desc", section=section, fallback=f"Convert units of area {measure_name}")
 
@@ -267,7 +265,7 @@ class Cvt(kp.Plugin):
         catalog = []
 
         # To discover measures and units, type CVT then proposed supported measures
-        for name,measure in self.measures.items():
+        for name, measure in self.measures.items():
             catalog.append(self.create_item(
                 category=kp.ItemCategory.REFERENCE,
                 label=self.ITEM_LABEL_PREFIX + name.title(),
@@ -285,7 +283,7 @@ class Cvt(kp.Plugin):
                 target="ITEMCAT_RELOAD_DEFS",
                 args_hint=kp.ItemArgsHint.FORBIDDEN,
                 hit_hint=kp.ItemHitHint.IGNORE))
-        else: # Else offer an option to customize
+        else:  # Else offer an option to customize
             catalog.append(self.create_item(
                 category=self.ITEMCAT_CREATE_CUSTOM_DEFS,
                 label=self.ITEM_LABEL_PREFIX + "Customize conversions",
@@ -304,15 +302,15 @@ class Cvt(kp.Plugin):
 
         if "inverse" in from_unit:
             if in_number == 0:
-                in_number = 1e-30 # TBD better handle divide-by-zero
-            in_number = 1/in_number
+                in_number = 1e-30  # TBD better handle divide-by-zero
+            in_number = 1 / in_number
 
-        converted = (in_number-from_offset) * from_factor / to_factor + to_offset
+        converted = (in_number - from_offset) * from_factor / to_factor + to_offset
 
         if "inverse" in to_unit:
             if converted == 0:
                 converted = 1e-30
-            converted = 1/converted
+            converted = 1 / converted
 
         return converted
 
@@ -320,7 +318,7 @@ class Cvt(kp.Plugin):
         parsed_input = self.input_parser.match(user_input)
         self.dbg(f"In suggest, parsed input = '{parsed_input}'")
         if parsed_input is None and len(items_chain) < 1:
-            self.dbg(f"In suggest, not matched")
+            self.dbg("In suggest, not matched")
             return
 
         in_from = ""
@@ -329,13 +327,13 @@ class Cvt(kp.Plugin):
             matched_number = parsed_input["number"]
             if self.decimal_separator != ".":
                 matched_number = matched_number.replace(self.decimal_separator, ".")
-         
+
             in_number = float(matched_number)
 
             in_from = parsed_input["from"]
             if in_from:
                 in_from = in_from.lower()
-            in_done_from = (parsed_input["done_from"] or False) and len(parsed_input["done_from"]) > 0
+            # in_done_from = (parsed_input["done_from"] or False) and len(parsed_input["done_from"]) > 0
             in_to = parsed_input["to"]
             in_done_to = (parsed_input["done_to"] or False) and len(parsed_input["done_to"]) > 0
             if in_to:
@@ -356,7 +354,7 @@ class Cvt(kp.Plugin):
                 self.dbg(f"on_suggest: No parsed input, measure = {measure}")
 
                 suggestions = []
-                for unit_name,unit in measure["units"].items():
+                for unit_name, unit in measure["units"].items():
                     conv_hint = f"factor {unit['factor']}"
                     if "offset" in unit:
                         conv_hint = conv_hint + f", offset {unit['offset']}"
@@ -378,15 +376,17 @@ class Cvt(kp.Plugin):
             self.dbg(f"reject in_from = {in_from}, units = {all_units.keys()}")
             return
 
-        if not "units" in measure:
+        if "units" not in measure:
             return
 
-        cmp_exact = lambda candidate, alias: candidate == alias.lower()
-        cmp_inexact = lambda candidate, alias: candidate in alias.lower()
+        cmp_exact = lambda candidate, alias: candidate == alias.lower()		# noqa
+        cmp_inexact = lambda candidate, alias: candidate in alias.lower()	# noqa
         comperator = cmp_exact
 
-        check_from_unit_match = lambda u: not in_from or any([comperator(in_from, alias) for alias in u["aliases"]])
-        check_to_unit_match = lambda u: not in_to or any([comperator(in_to, alias) for alias in u["aliases"]])
+        check_from_unit_match = \
+			lambda u: not in_from or any([comperator(in_from, alias) for alias in u["aliases"]])	# noqa
+        check_to_unit_match = \
+			lambda u: not in_to or any([comperator(in_to, alias) for alias in u["aliases"]])	# noqa
         units = list(filter(check_from_unit_match, measure["units"].values()))
 
         if len(units) == 0:
@@ -400,7 +400,7 @@ class Cvt(kp.Plugin):
             # We propose the target units (filtered down if given to_unit)
             from_unit = units[0]
 
-            for unit_name,unit in measure["units"].items():
+            for unit_name, unit in measure["units"].items():
                 self.dbg(f"unit = {unit_name}")
                 comperator = cmp_exact if in_done_to else cmp_inexact
                 if not check_to_unit_match(unit):
@@ -417,11 +417,11 @@ class Cvt(kp.Plugin):
         converted_display = f"{converted:,.9g}".translate(self.transmap_output)
         converted_clipboard = f"{converted:.9g}"
         if self.decimal_separator != ".":
-            converted_clipboard = converted_clipboard.replace(".", self.decimal_separator)                 
+            converted_clipboard = converted_clipboard.replace(".", self.decimal_separator)
 
         suggestions.append(self.create_item(
             category=self.ITEMCAT_RESULT,
-            label= converted_display, 
+            label=converted_display,
             short_desc=f'{to_unit_name} ({",".join(to_unit["aliases"])})',
             target=converted_display,
             args_hint=kp.ItemArgsHint.FORBIDDEN,
@@ -436,8 +436,8 @@ class Cvt(kp.Plugin):
             self.on_catalog()
         elif item and item.category() == self.ITEMCAT_CREATE_CUSTOM_DEFS:
             try:
-                builtin_cvtdefs = os.path.join("data/",self.CVTDEF_FILE)
-                builtin_cvtdefs_text = self.load_text_resource(builtin_cvtdefs).replace("\r\n","\n")
+                builtin_cvtdefs = os.path.join("data/", self.CVTDEF_FILE)
+                builtin_cvtdefs_text = self.load_text_resource(builtin_cvtdefs).replace("\r\n", "\n")
                 custom_cvtdefs = os.path.join(kp.user_config_dir(), self.CVTDEF_FILE)
                 if os.path.exists(custom_cvtdefs):
                     self.warn(f"Customized conversion file '{custom_cvtdefs}' already exists. It hasn't been overwritten")
