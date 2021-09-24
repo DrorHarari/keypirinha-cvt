@@ -11,6 +11,9 @@ jobs:
     name: Draft Release
     runs-on: ubuntu-latest
     steps:
+    - name: Get package version
+      run: echo "::set-output name=version::$(cat VERSION)"
+      id: version
     - name: Checkout the repository
       uses: actions/checkout@v2
     - name: Set up Python 3.8
@@ -28,9 +31,29 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Create draft release
+    - name: Build Keypirinha plugin
       env:
-        PACKAGE_VERSION: 2.2.3
+        PACKAGE_VERSION: ${{ steps.version.outputs.version }}
       run: |
         cd etc
         python ./build.py
+    - name: Draft release
+      uses: actions/create-release@v1
+      id: create_release
+      with:
+        draft: false
+        prerelease: true
+        release_name: ${{ steps.version.outputs.version }}
+        tag_name: ${{ github.ref }}
+        body_path: README.md
+      env: 
+        GITHUB_TOKEN: ${{ github.token }}
+    - name: Upload plugin Keypirinha artifact
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./etc/Cvt.keypirinha-package
+        asset_name: Cvt.keypirinha-package
+        asset_content_type: application/zip
