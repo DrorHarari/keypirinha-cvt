@@ -31,6 +31,6 @@ jobs:
     - name: Create draft release
       env:
         PACKAGE_VERSION: 2.2.3
-      run:
-        - cd etc
-        - python ./build.py
+      run: |
+        cd etc
+        python ./build.py
