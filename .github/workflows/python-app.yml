@@ -11,11 +11,11 @@ jobs:
     name: Draft Release
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v2
     - name: Get package version
       run: echo "::set-output name=version::$(cat VERSION)"
       id: version
-    - name: Checkout the repository
-      uses: actions/checkout@v2
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
@@ -44,8 +44,8 @@ jobs:
         draft: false
         prerelease: true
         release_name: ${{ steps.version.outputs.version }}
-        tag_name: ${{ github.ref }}
-        body_path: README.md
+        tag_name: ${{ steps.version.outputs.version }}
+        body: Version ${{ steps.version.outputs.version }} - see changes in README.md
       env: 
         GITHUB_TOKEN: ${{ github.token }}
     - name: Upload plugin Keypirinha artifact
