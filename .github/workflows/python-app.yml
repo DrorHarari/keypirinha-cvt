@@ -2,10 +2,9 @@ name: Create a new release
 on:
   workflow_dispatch:
     inputs:
-      ref:
-        description: Commit name to release (defaults to master)
-        required: false
-
+      releaseName:
+        description: 'Release name'     
+        required: true
 jobs:
   release:
     name: Draft Release
@@ -43,7 +42,7 @@ jobs:
       with:
         draft: false
         prerelease: true
-        release_name: ${{ steps.version.outputs.version }}
+        release_name:  ${{ github.event.inputs.releaseName }}
         tag_name: ${{ steps.version.outputs.version }}
         body: Version ${{ steps.version.outputs.version }} - see changes in README.md
       env: 
