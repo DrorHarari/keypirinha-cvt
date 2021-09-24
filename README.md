@@ -100,8 +100,13 @@ For manual installation simply download the cvt.keypirinha-package file from the
 * Thanks [ArmaniKorsich](https://gitter.im/ArmaniKorsich) for the inspiration to write this plugin.
 * Thanks [Shuzo Iwasaki](https://github.com/shuGH) for internationalization improvements.
 * Thanks [vivancev86](https://github.com/vivancev86) for some speed units.
+* Thanks [Leander Geiger](https://github.com/legeiger) for some volume units
 
 ## Release Notes ##
+**V2.2.3**
+ - Added automatic Keypirinha artifact building using Git Actions
+ - New volume units m3 and cm3
+ 
 **V2.2.2**
 - Added the Dunam measure of area (=1000m^2).
 
